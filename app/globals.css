@@ -1,26 +1,402 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================================================
+   INVITRA — Design System
+   A luxury invitation studio. Ivory paper, gold leaf, and quiet motion.
+   ========================================================================= */
+
+@theme {
+  /* --- Palette: paper ------------------------------------------------- */
+  --color-ivory: #fffdf8;
+  --color-ivory-100: #fffcf4;
+  --color-ivory-200: #fdf8ee;
+  --color-cream: #faf3e7;
+  --color-cream-200: #f5ecdb;
+  --color-cream-300: #ecdfc9;
+
+  /* --- Palette: metals ------------------------------------------------ */
+  --color-champagne: #efe0c2;
+  --color-champagne-200: #e6d3ae;
+  --color-champagne-300: #d9c193;
+  --color-gold: #c9a227;
+  --color-gold-light: #e3c76a;
+  --color-gold-deep: #9b7a14;
+  --color-rosegold: #c98b7a;
+  --color-rosegold-light: #e5b8ab;
+  --color-rosegold-deep: #a5675a;
+
+  /* --- Palette: blush -------------------------------------------------- */
+  --color-blush: #f7e6e3;
+  --color-blush-200: #f0d2cd;
+  --color-blush-300: #e3b3ab;
+
+  /* --- Palette: ink ---------------------------------------------------- */
+  --color-charcoal: #24211e;
+  --color-charcoal-800: #322e29;
+  --color-charcoal-600: #4d4740;
+  --color-charcoal-400: #7d746a;
+  --color-charcoal-200: #b9b1a6;
+  --color-ink: #14120f;
+
+  /* --- Template accent families ---------------------------------------- */
+  --color-royal: #0b0906;
+  --color-royal-gold: #d4af37;
+  --color-moonlight: #101a33;
+  --color-moonlight-silver: #c8d4e8;
+  --color-garden: #4a6b4f;
+  --color-lavender: #b9a7cf;
+  --color-mughal: #5c1a24;
+  --color-emerald: #10513f;
+  --color-antique: #c8a668;
+
+  /* --- Semantic (light) ------------------------------------------------ */
+  --color-surface: #fffdf8;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #faf3e7;
+  --color-line: #ece2d2;
+  --color-body: #4d4740;
+  --color-heading: #24211e;
+
+  /* --- Type ------------------------------------------------------------ */
+  --font-display: "Cormorant Garamond", Cambria, Georgia, "Times New Roman", serif;
+  --font-serif: "Marcellus", Cambria, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-label: "Jost", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-script: "Great Vibes", "Cormorant Garamond", cursive;
+  --font-cinzel: "Cinzel", "Cormorant Garamond", Georgia, serif;
+  --font-amiri: "Amiri", "Cormorant Garamond", Georgia, serif;
+
+  --text-hero: clamp(2.75rem, 8vw, 6.5rem);
+  --text-hero--line-height: 0.98;
+  --text-hero--letter-spacing: -0.025em;
+  --text-display: clamp(2.25rem, 5.2vw, 4rem);
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.02em;
+  --text-title: clamp(1.75rem, 3.4vw, 2.75rem);
+  --text-title--line-height: 1.15;
+
+  /* --- Elevation: soft, paper-like -------------------------------------- */
+  --shadow-soft: 0 1px 2px rgb(36 33 30 / 0.04), 0 8px 24px -8px rgb(36 33 30 / 0.08);
+  --shadow-lifted: 0 2px 4px rgb(36 33 30 / 0.04), 0 18px 44px -14px rgb(36 33 30 / 0.14);
+  --shadow-float: 0 4px 8px rgb(36 33 30 / 0.05), 0 32px 72px -20px rgb(36 33 30 / 0.22);
+  --shadow-gold: 0 12px 40px -12px rgb(201 162 39 / 0.38);
+  --shadow-inset-line: inset 0 0 0 1px rgb(255 255 255 / 0.5);
+
+  /* --- Motion ----------------------------------------------------------- */
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-silk: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --animate-float-slow: float-slow 9s ease-in-out infinite;
+  --animate-shimmer: shimmer 3.5s linear infinite;
+  --animate-sheen: sheen 6s ease-in-out infinite;
+  --animate-twinkle: twinkle 4s ease-in-out infinite;
+  --animate-flicker: flicker 3.2s ease-in-out infinite;
+  --animate-sway: sway 6s ease-in-out infinite;
+  --animate-rise: rise 0.9s var(--ease-luxe) both;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* --- Dark mode: candlelit charcoal, not flat black ------------------------ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  --color-surface: #17150f;
+  --color-surface-raised: #1f1c16;
+  --color-surface-sunken: #110f0b;
+  --color-line: #35301f;
+  --color-body: #cdc4b4;
+  --color-heading: #f6efe1;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -8px rgb(0 0 0 / 0.55);
+  --shadow-lifted: 0 2px 4px rgb(0 0 0 / 0.4), 0 18px 44px -14px rgb(0 0 0 / 0.6);
+  --shadow-float: 0 4px 8px rgb(0 0 0 / 0.4), 0 32px 72px -20px rgb(0 0 0 / 0.7);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ============================================================================
+   Base
+   ========================================================================= */
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-body);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-weight: 300;
+  }
+
+  /* Visible, on-brand focus ring for keyboard users only */
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-gold) 28%, transparent);
+    color: var(--color-heading);
+  }
+
+  /* Slim, unobtrusive scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--color-champagne-300) 70%, transparent);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-champagne-300);
+    background-clip: content-box;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================================================
+   Utilities
+   ========================================================================= */
+
+@utility glass {
+  background: color-mix(in oklab, var(--color-surface-raised) 62%, transparent);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid color-mix(in oklab, white 55%, transparent);
+  box-shadow: var(--shadow-soft);
 }
+
+@utility glass-dark {
+  background: rgb(20 18 15 / 0.5);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgb(255 255 255 / 0.1);
+}
+
+/* Gold-leaf text — a real gradient, not a flat yellow */
+@utility text-gilt {
+  background: linear-gradient(
+    100deg,
+    var(--color-gold-deep) 0%,
+    var(--color-gold) 22%,
+    #f3e3ac 42%,
+    var(--color-gold) 58%,
+    var(--color-gold-deep) 80%,
+    var(--color-gold) 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+@utility text-rose-gilt {
+  background: linear-gradient(
+    100deg,
+    var(--color-rosegold-deep),
+    var(--color-rosegold),
+    #f4d6cd 48%,
+    var(--color-rosegold),
+    var(--color-rosegold-deep)
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Hairline gold rule used to separate sections */
+@utility rule-gold {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--color-gold) 45%, transparent) 30%,
+    color-mix(in oklab, var(--color-gold) 70%, transparent) 50%,
+    color-mix(in oklab, var(--color-gold) 45%, transparent) 70%,
+    transparent
+  );
+}
+
+@utility eyebrow {
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-gold-deep);
+}
+
+.dark .eyebrow { color: var(--color-gold-light); }
+
+/* Paper grain — a faint fibre texture so surfaces don't read as flat screens */
+@utility paper {
+  position: relative;
+}
+.paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+}
+.dark .paper::after { mix-blend-mode: screen; opacity: 0.35; }
+
+@utility mask-fade-b {
+  mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+}
+
+@utility mask-fade-x {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+@utility preserve-3d {
+  transform-style: preserve-3d;
+}
+
+@utility backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ============================================================================
+   Keyframes
+   ========================================================================= */
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-18px) rotate(2deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@keyframes sheen {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; transform: scaleY(1) translateX(0); }
+  25% { opacity: 0.86; transform: scaleY(1.06) translateX(-0.5px); }
+  50% { opacity: 0.95; transform: scaleY(0.96) translateX(0.5px); }
+  75% { opacity: 0.8; transform: scaleY(1.03) translateX(0); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fall {
+  to { transform: translate3d(var(--drift, 40px), 110vh, 0) rotate(var(--spin, 360deg)); }
+}
+
+@keyframes rise-heart {
+  0% { transform: translate3d(0, 0, 0) scale(0.6); opacity: 0; }
+  15% { opacity: 0.6; }
+  85% { opacity: 0.35; }
+  100% { transform: translate3d(40px, -108vh, 0) scale(1.05); opacity: 0; }
+}
+
+@keyframes shoot {
+  0% { transform: translate3d(0, 0, 0) scaleX(0); opacity: 0; }
+  3% { opacity: 1; }
+  9% { transform: translate3d(320px, 120px, 0) scaleX(1); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes flutter {
+  0% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(32vw, -60px, 0); }
+  50% { transform: translate3d(60vw, 40px, 0); }
+  75% { transform: translate3d(88vw, -30px, 0); }
+  100% { transform: translate3d(120vw, 20px, 0); }
+}
+
+@keyframes flap {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(0.35); }
+}
+
+@keyframes seal-press {
+  0% { transform: scale(0.4) rotate(-24deg); opacity: 0; }
+  55% { transform: scale(1.14) rotate(4deg); opacity: 1; }
+  75% { transform: scale(0.97) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee var(--duration, 42s) linear infinite;
+}
+
+/* ============================================================================
+   Accessibility — honour reduced-motion everywhere, including JS-driven FX
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  [data-fx] { display: none !important; }
+}
+
+/* Skip link — hidden until focused */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 50%;
+  translate: -50% -160%;
+  z-index: 100;
+  padding: 0.65rem 1.25rem;
+  border-radius: 999px;
+  background: var(--color-charcoal);
+  color: var(--color-ivory);
+  font-family: var(--font-label);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  transition: translate 0.3s var(--ease-luxe);
+}
+.skip-link:focus-visible { translate: -50% 0; }
