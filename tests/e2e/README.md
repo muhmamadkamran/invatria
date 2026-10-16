@@ -105,3 +105,20 @@ must pass before considering these isolated flows verified; TypeScript checking
 alone does not establish that the tests pass.
 
 Configuration reference: https://playwright.dev/docs/test-configuration
+
+## Production public-link regression
+
+```powershell
+node node_modules/@playwright/test/cli.js test --config=playwright.production.config.ts
+```
+
+The equivalent npm command is `npm run test:e2e:production`. This builds the
+optimized application, runs `next start` on port 3401, and uses a disposable
+Supabase HTTP backend with synthetic credentials for both build and runtime.
+It creates no records in a real project and requires no browser installation.
+
+The checks seed a published slug **after** the build and require HTTP 200,
+server-rendered invitation content and Open Graph metadata on its first request.
+They also check another visitor request, an unpublished draft and an unknown
+slug. This catches production-only static-to-dynamic failures that `next dev`
+does not reveal, including accidentally reading account cookies in an ISR route.

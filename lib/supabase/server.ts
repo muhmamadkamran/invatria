@@ -10,9 +10,9 @@ export const supabaseConfiguredServer = Boolean(URL && ANON);
 /**
  * Server-side client for React Server Components.
  *
- * Used to render a published invitation on the server — that is what gives
- * shared links a real preview in WhatsApp and iMessage, which a client-only
- * page can never have. It only ever uses the anon key; RLS does the rest.
+ * Used by authenticated request handlers, including the email-confirmation
+ * callback. Cached public invitation pages use the cookie-free public client
+ * instead, so their rendering mode never depends on a visitor's session.
  */
 export async function createClient() {
   if (!supabaseConfiguredServer) return null;
@@ -22,8 +22,8 @@ export async function createClient() {
     cookies: {
       getAll: () => store.getAll(),
       setAll: (list) => {
-        // Server Components cannot set cookies. Reading a published invitation
-        // needs no session, so swallowing this is correct rather than lossy.
+        // Route handlers can set cookies; Server Components can only read
+        // them and rely on middleware to refresh the session instead.
         try {
           list.forEach(({ name, value, options }) => store.set(name, value, options));
         } catch {

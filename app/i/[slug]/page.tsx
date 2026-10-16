@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { cache } from "react";
+import { createPublicClient } from "@/lib/supabase/public-server";
 import type { InvitationRow } from "@/lib/supabase/types";
 import type { Invitation } from "@/lib/types";
 import { getOccasion } from "@/lib/occasions";
@@ -18,8 +19,8 @@ export function generateStaticParams() {
   return [];
 }
 
-async function fetchInvitation(slug: string): Promise<Invitation | null> {
-  const sb = await createClient();
+const fetchInvitation = cache(async (slug: string): Promise<Invitation | null> => {
+  const sb = createPublicClient();
   if (!sb) return null;
 
   const { data, error } = await sb
@@ -43,7 +44,7 @@ async function fetchInvitation(slug: string): Promise<Invitation | null> {
     createdAt: new Date(row.created_at).getTime(),
     updatedAt: new Date(row.updated_at).getTime(),
   };
-}
+});
 
 function headline(inv: Invitation) {
   const o = getOccasion(inv.category);
