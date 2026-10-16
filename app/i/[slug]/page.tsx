@@ -108,8 +108,7 @@ export default async function InvitationPage({
   const { slug } = await params;
   const invitation = await fetchInvitation(slug);
 
-  /* When the server finds it, the guest gets fully-rendered HTML. When it
-     doesn't — no backend configured, or a local-only invitation — the client
-     falls back to looking in this browser's own storage. */
-  return <PublicInvitation slug={slug} initial={invitation} />;
+  /* Published content is read from Supabase on the server, with a public cloud
+     lookup in the browser if the server could not resolve it. */
+  return <PublicInvitation key={slug} slug={slug} initial={invitation} />;
 }

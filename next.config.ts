@@ -14,6 +14,9 @@ const supabaseHost = (() => {
 })();
 
 const nextConfig: NextConfig = {
+  // Keep test servers from overwriting the user's running development build.
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
+  typescript: { tsconfigPath: process.env.NEXT_TSCONFIG_PATH ?? "tsconfig.json" },
   // Several lockfiles exist above this directory; pin the root explicitly.
   outputFileTracingRoot: __dirname,
   images: {

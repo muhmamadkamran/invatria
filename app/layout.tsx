@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AdSenseScript } from "@/components/ads";
-import { CloudSync } from "@/components/cloud-sync";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { AuthUIProvider } from "@/components/auth/auth-ui";
 import { Toaster } from "sonner";
@@ -89,7 +88,6 @@ export default function RootLayout({
             Skip to content
           </a>
           {children}
-          <CloudSync />
           <Toaster
             position="bottom-center"
             toastOptions={{

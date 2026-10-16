@@ -18,7 +18,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { applyOccasion, getOccasion } from "@/lib/occasions";
 import { LANGUAGES } from "@/lib/i18n";
 import type { CategoryId, LangCode, TemplateId } from "@/lib/types";
-import { isSlugAvailable, saveInvitation, usingCloud } from "@/lib/storage";
+import { isSlugAvailable } from "@/lib/storage";
 import { cn, slugify, uid, mapsSearchUrl } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -892,14 +892,15 @@ export function StepPreview() {
    ----------------------------------------------------------------------- */
 
 export function StepPublish() {
-  const { inv, update } = useBuilder();
+  const { inv, update, commit } = useBuilder();
   const [slug, setSlug] = useState(inv.slug);
   const [status, setStatus] = useState<"idle" | "taken" | "free">("idle");
   const [origin, setOrigin] = useState("");
+  const [publishing, setPublishing] = useState(false);
   const template = getTemplate(inv.templateId);
-  const { enabled: authEnabled, isAnonymous, email } = useAuth();
+  const { enabled: authEnabled, isAnonymous, email, emailConfirmed, loading: authLoading } = useAuth();
   const { openAuth } = useAuthUI();
-  const hasAccount = Boolean(email) && !isAnonymous;
+  const hasAccount = Boolean(email) && !isAnonymous && emailConfirmed;
 
   useEffect(() => setOrigin(window.location.origin), []);
 
@@ -907,55 +908,50 @@ export function StepPublish() {
     const clean = slugify(slug);
     if (!clean) return setStatus("idle");
     let alive = true;
-    isSlugAvailable(clean, inv.id).then((ok) => alive && setStatus(ok ? "free" : "taken"));
+    isSlugAvailable(clean, inv.id)
+      .then((ok) => alive && setStatus(ok ? "free" : "taken"))
+      .catch(() => alive && setStatus("idle"));
     return () => {
       alive = false;
     };
   }, [slug, inv.id]);
 
   const url = origin ? `${origin}/i/${inv.slug}` : "";
-  const ready = Boolean(inv.hostPrimary && inv.date);
-  const cloud = usingCloud();
+  const ready = Boolean(inv.hostPrimary.trim() && inv.date) && authEnabled && !authLoading && !publishing;
+  const localPreview = origin ? ['localhost', '127.0.0.1', '[::1]'].includes(new URL(origin).hostname) : false;
 
   /** The actual write. Split out so the account prompt can call it too. */
   async function doPublish() {
-    const clean = slugify(slug) || inv.id.replace("inv_", "");
-    if (!(await isSlugAvailable(clean, inv.id))) {
-      toast.error("That link is already taken", {
-        description: "Try adding the year, or a middle name.",
-      });
-      return;
-    }
-    const next = { ...inv, slug: clean, published: true };
+    setPublishing(true);
     try {
-      await saveInvitation(next);
-      update({ slug: clean, published: true });
+      const clean = slugify(slug) || inv.id;
+      if (!(await isSlugAvailable(clean, inv.id))) {
+        toast.error("That link is already taken", { description: "Try adding the year, or a middle name." });
+        return;
+      }
+      await commit({ slug: clean, published: true });
       toast.success("Published", {
-        description: cloud
-          ? "Your link is live and will open on any device."
-          : "Saved to this browser. Connect a backend to share it more widely.",
+        description: "Saved online. Your guest link is ready.",
       });
     } catch (err) {
       toast.error("Could not publish", {
         description:
           err instanceof Error ? err.message : "Please check your connection and try again.",
       });
+    } finally {
+      setPublishing(false);
     }
   }
 
-  /**
-   * Publishing is the moment an invitation becomes something worth keeping, so
-   * it is also the moment to offer an account — without it the link works but
-   * the host can never edit it, or read their replies, from anywhere else.
-   * The prompt is skippable: nobody's invitation is held hostage.
-   */
+  /** Account checks here are backed by validated user checks and database RLS. */
   async function publish() {
-    if (authEnabled && !hasAccount) {
+    if (!authEnabled) {
+      toast.error("Online saving is unavailable");
+      return;
+    }
+    if (!hasAccount) {
       openAuth("claim", {
         redirectPath: `/my-invitations/${inv.id}`,
-        skipLabel: "Publish without an account for now",
-        onSkip: () => void doPublish(),
-        onSuccess: () => void doPublish(),
       });
       return;
     }
@@ -992,7 +988,7 @@ export function StepPublish() {
       </Field>
       {status === "taken" ? (
         <p className="-mt-3 text-xs text-red-600 dark:text-red-400">
-          Something else already lives at that address on this device.
+          Another invitation already uses that address.
         </p>
       ) : null}
 
@@ -1006,7 +1002,7 @@ export function StepPublish() {
 
       <div className="flex flex-wrap gap-2">
         <Button onClick={publish} disabled={!ready} size="lg">
-          {inv.published ? "Update the live link" : "Publish invitation"}
+          {publishing ? "Publishing…" : inv.published ? "Update the live link" : "Publish invitation"}
         </Button>
         {inv.published ? (
           <Button asChild variant="outline" size="lg">
@@ -1062,7 +1058,9 @@ export function StepPublish() {
         </div>
       ) : null}
 
-      {cloud ? (
+      {localPreview ? <p className="rounded-2xl border border-amber-400/40 p-4 text-xs leading-relaxed text-charcoal-600 dark:text-charcoal-200">
+        You are previewing on localhost. To share with guests on other devices, open this invitation from your deployed website.
+      </p> : null}
         <p className="text-xs leading-relaxed text-charcoal-400">
           Your invitation is stored on your Invitra account and opens on any
           device. Replies and guest-book notes come back to{" "}
@@ -1071,16 +1069,6 @@ export function StepPublish() {
           </Link>
           .
         </p>
-      ) : (
-        <p className="rounded-2xl border border-amber-400/40 bg-amber-400/8 p-4 text-xs leading-relaxed text-charcoal-600 dark:text-charcoal-200">
-          <strong className="font-medium">This link only works in this browser.</strong>{" "}
-          No backend is configured, so the invitation is saved to this device and
-          guests opening the link elsewhere will not find it. Set{" "}
-          <code className="font-mono">NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
-          <code className="font-mono">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> to
-          publish for real.
-        </p>
-      )}
     </StepShell>
   );
 }

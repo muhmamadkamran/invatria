@@ -14,6 +14,8 @@ import {
 import { Wordmark } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AccountButton } from "@/components/auth/account-button";
+import { AccountGate } from "@/components/auth/account-gate";
+import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { AdSlot } from "@/components/ads";
 import { STEPS } from "@/lib/steps";
@@ -40,7 +42,7 @@ function SaveBadge() {
         <>
           <Check className="size-3 text-gold" /> Saved
         </>
-      ) : null}
+      ) : saveState === "error" ? "Not saved" : null}
     </span>
   );
 }
@@ -95,7 +97,7 @@ function Stepper() {
 }
 
 function Shell() {
-  const { step, next, back, ready, inv } = useBuilder();
+  const { step, next, back, ready, inv, error, loadError, update } = useBuilder();
   const [sheet, setSheet] = useState(false);
   const Panel = PANELS[step];
   const current = STEPS[step];
@@ -107,6 +109,8 @@ function Shell() {
       document.body.style.overflow = "";
     };
   }, [sheet]);
+
+  if (loadError) return <main className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 text-center"><p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p><Link href="/my-invitations" className="mt-7 underline underline-offset-4">Back to My Invitations</Link></main>;
 
   if (!ready) {
     return (
@@ -172,6 +176,7 @@ function Shell() {
 
         {/* ---- form ---- */}
         <main id="main" className="min-w-0">
+          {error ? <div className="mb-5 rounded-2xl border border-red-400/40 p-4"><p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p><Button className="mt-3" variant="outline" size="sm" onClick={() => update({})}>Retry save</Button></div> : null}
           <div className="rounded-[1.75rem] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 sm:p-10">
             <div className="mb-8 flex items-baseline justify-between gap-4">
               <p className="font-label text-[0.5625rem] uppercase tracking-[0.24em] text-gold-deep dark:text-gold-light">
@@ -271,6 +276,7 @@ function Shell() {
 
 function WithParams() {
   const params = useSearchParams();
+  const { userId } = useAuth();
   const template = params.get("template");
   const occasion = params.get("occasion");
 
@@ -279,7 +285,7 @@ function WithParams() {
   if (occasion && CATEGORY_MAP[occasion as CategoryId]) seed.category = occasion;
 
   return (
-    <BuilderProvider seed={seed}>
+    <BuilderProvider key={userId} seed={seed} draftId={params.get("draft")}>
       <Shell />
     </BuilderProvider>
   );
@@ -287,6 +293,7 @@ function WithParams() {
 
 export function Builder() {
   return (
+    <AccountGate>
     <Suspense
       fallback={
         <div className="grid min-h-screen place-items-center">
@@ -296,5 +303,6 @@ export function Builder() {
     >
       <WithParams />
     </Suspense>
+    </AccountGate>
   );
 }

@@ -3,13 +3,9 @@
 import { getSupabase } from "./client";
 
 /* ============================================================================
-   Accounts, without a wall in front of the product.
-
-   A visitor starts anonymous and can build a whole invitation before Invitra
-   ever asks who they are. At publish they're offered an account, and the
-   upgrade happens *in place*: Supabase keeps the same `user.id`, so every
-   invitation they already made stays theirs with no migration and no change to
-   the RLS policies, which key off `owner_id`.
+   Hosts sign in with confirmed email accounts before using the builder.
+   Legacy anonymous accounts may be upgraded in place to preserve ownership;
+   new anonymous sessions are never created by the app.
    ========================================================================= */
 
 export type AuthResult =

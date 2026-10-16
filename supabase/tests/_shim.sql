@@ -7,7 +7,9 @@ create schema if not exists storage;
 
 create table if not exists auth.users (
   id uuid primary key default gen_random_uuid(),
-  email text
+  email text,
+  is_anonymous boolean not null default false,
+  email_confirmed_at timestamptz
 );
 
 -- Supabase resolves auth.uid() from the request JWT; a GUC stands in here.

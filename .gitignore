@@ -12,9 +12,16 @@
 
 # testing
 /coverage
+/playwright-report/
+/test-results/
+/test-videos/
+/playwright/.cache/
+/.tmp/trace-inspect/
 
 # next.js
 /.next/
+/.next-playwright-*/
+/.tsconfig-playwright-*.json
 /out/
 
 # production
@@ -26,12 +33,14 @@
 
 # debug
 npm-debug.log*
+/debug.log
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel

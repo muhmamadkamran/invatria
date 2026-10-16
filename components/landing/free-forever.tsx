@@ -122,8 +122,8 @@ export function FreeForever() {
             <Link href="/create">Create your invitation</Link>
           </Button>
           <p className="mt-4 text-xs text-cream/40">
-            No sign-up. Your work saves to this device the moment you start
-            typing.
+            Browse designs for free. Sign in or create an account to make, save
+            and publish your invitation.
           </p>
         </Reveal>
       </Container>

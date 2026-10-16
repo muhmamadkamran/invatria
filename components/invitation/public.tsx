@@ -18,7 +18,7 @@ export function PublicInvitation({
   slug: string;
   initial?: Invitation | null;
 }) {
-  const [state, setState] = useState<"loading" | "found" | "missing">(
+  const [state, setState] = useState<"loading" | "found" | "missing" | "error">(
     initial ? "found" : "loading",
   );
   const [inv, setInv] = useState<Invitation | null>(initial);
@@ -28,13 +28,14 @@ export function PublicInvitation({
     setUrl(window.location.href);
     if (initial) return;
 
-    /* Nothing came from the server: either there is no backend configured, or
-       this invitation only ever lived in this browser. Look locally. */
+    /* Retry the public cloud lookup if server rendering did not resolve it. */
     let alive = true;
     findBySlug(slug).then((found) => {
       if (!alive) return;
       setInv(found);
       setState(found ? "found" : "missing");
+    }).catch(() => {
+      if (alive) setState("error");
     });
     return () => {
       alive = false;
@@ -55,6 +56,8 @@ export function PublicInvitation({
       </div>
     );
   }
+
+  if (state === "error") return <main className="grid min-h-screen place-items-center px-6 text-center"><div><h1 className="text-title">Unable to load this invitation</h1><p className="mt-5 text-sm text-charcoal-400">Please check your connection and reload to try again.</p></div></main>;
 
   if (state === "missing" || !inv) {
     return (

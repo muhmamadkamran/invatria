@@ -1,164 +1,154 @@
 # Invitra
 
-Invitations worth opening.
+A digital invitation studio with fourteen guided steps, live previews, public
+invitation links, RSVP management and a guest book.
 
-A digital invitation studio: design an elegant, animated invitation in fourteen
-guided steps, publish it to a link, and share it with as many people as you
-like. Every feature is free. There is no pricing page, no subscription, no
-trial, no watermark and no guest limit anywhere in the product — the only
-revenue is a small number of clearly-labelled ads on the studio pages.
+## Setup
 
-## Running it
+Use Node.js 24 LTS. Install dependencies and create `.env.local` in the
+project root with your own Supabase project values:
 
-```bash
-npm install
-cp .env.example .env.local   # optional — see below
-npm run dev                  # http://localhost:3000
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_PUBLIC_PROJECT_KEY
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-Node 20+. Without Supabase credentials the app runs entirely on IndexedDB,
-which is fine for UI work but means invitations only open on the device that
-made them. With them, it uses the real backend.
+```powershell
+npm install
+npm run dev
+```
 
-**Deploying:** see [DEPLOYMENT.md](DEPLOYMENT.md).
+If this Windows environment cannot launch `npm.cmd`, existing dependencies can
+be used directly:
+
+```powershell
+node node_modules/next/dist/bin/next dev
+```
+
+The linked project is configured locally in ignored `.env.local`. Real Auth,
+table, slug-function and guest-function connection checks passed on 2026-10-16.
+An existing real invitation opened through the local frontend in two fresh
+browsers. A confirmed test account completed cloud upload, save, publish,
+guest RSVP/note submission, host management and same-account access from an
+independent browser. The account-restriction migration is applied: confirmed
+accounts pass its helper, while public-key and anonymous-session publish
+attempts were rejected by the real database with `42501`.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for setup and live validation.
+
+For a local frontend connected to your real Supabase project, copy
+`.env.example` to `.env.local`, enter the public project URL/key, and run:
+
+```powershell
+node scripts/check-supabase.mjs
+node node_modules/next/dist/bin/next dev
+```
+
+To check an existing published invitation from two fresh browsers against the
+real project, without creating or changing records:
+
+```powershell
+node scripts/check-supabase-browser.mjs --headed
+```
+
+This uses a separate local frontend on port 3300 and records Full HD videos in
+`test-videos/live-supabase`. It verifies public viewing and the login gate;
+authenticated publishing requires a confirmed test account.
+
+The connection check reads Auth settings, schema/RPC availability and public
+guest-function validation/CORS. It does not create invitations or test account
+login, Storage uploads or database policies. The browser regression suite uses
+an isolated mock backend; passing it does not verify your live project.
+
+With a confirmed disposable account configured as `SUPABASE_TEST_EMAIL`,
+`SUPABASE_TEST_PASSWORD` and optionally `SUPABASE_TEST_USER_ID` in `.env.local`,
+the real authenticated workflow can also be run:
+
+```powershell
+node scripts/check-supabase-authenticated.mjs --headed
+```
+
+This creates and retains a clearly named test invitation, uploads a cover, and
+submits test guest replies. It uses the actual local frontend origin allowed by
+the project's guest function (default `http://localhost:3000`), so keep that
+port free. Full HD host/guest recordings are saved under
+`test-videos/live-supabase-authenticated`.
+
+## Saving and sharing
+
+Invitations, drafts, media, RSVPs and guest-book messages use Supabase only.
+There is no IndexedDB fallback. Browse designs and sample invitations without
+signing in. The builder, saving, uploading and publishing require a signed-in
+email account. Confirm your email before continuing. If the backend is not
+configured, the builder shows that online saving is unavailable.
+
+Changes awaiting a successful cloud save exist only in page memory. A failed
+save is shown as an error; reloading before saving loses those changes.
+
+A published `/i/[slug]` link is public: guests can view it and respond without
+signing in. The website must be deployed at a public address for other people
+to open it; a `localhost` link points at the guest's own computer. Supabase
+credentials must be present when the deployment is built.
+
+Authentication uses session cookies so users can stay signed in. Theme
+preferences may be stored in the browser; invitation content and replies are
+not. Historical IndexedDB and migration modules are disconnected from the
+active app. Older browser data is not automatically imported or deleted.
 
 ## Architecture
 
-```
-User → Netlify (Next.js) → Supabase (Postgres + Auth + Storage + Edge Functions)
+```text
+Browser -> Next.js website -> Supabase Auth + Postgres + Storage
+Guest response -> submit-response Edge Function -> Postgres
 ```
 
-| Concern | Where it lives |
+| Concern | Storage |
 | --- | --- |
-| Invitations | `public.invitations` — promoted columns + a `jsonb` body |
-| RSVPs, guest book | `public.rsvps`, `public.guest_messages` |
-| Photos, music | Supabase Storage, scoped to `<user-id>/…` |
-| Ownership | Anonymous auth — still no sign-up |
-| Public writes | `submit-response` Edge Function (rate limit + captcha) |
-| Drafts, theme | Still the browser — correctly so |
+| Accounts and ownership | Supabase Auth |
+| Invitations and drafts | `public.invitations` |
+| RSVPs and guest messages | `public.rsvps`, `public.guest_messages` |
+| Photos, video and music | Supabase Storage |
+| Guest submissions | `submit-response` Edge Function |
+| Changes awaiting cloud save | React state in memory |
 
-`lib/storage.ts` is the only module the app talks to for persistence. It picks
-between `storage-remote.ts` (Supabase) and `storage-local.ts` (IndexedDB) at
-runtime, and loads the Supabase SDK lazily so marketing pages never pay for it.
+`lib/storage.ts` exposes the cloud persistence contract. Row-level security
+protects owner actions; published invitation content remains public for
+guests. Apply every migration in `supabase/migrations` in order, including the
+account requirements, rather than applying only the original schema.
 
-Security policies have an adversarial test suite in `supabase/tests/` — 22
-checks covering cross-tenant reads, `owner_id` spoofing, anonymous insert
-attempts and storage folder scoping.
+## Routes
 
-## What's here
-
-| Route | What it is |
+| Route | Purpose |
 | --- | --- |
-| `/` | Landing page — hero, 22 features, 6 designs, 18 occasions, the 14 steps, FAQ |
-| `/templates` | The full collection, filterable by occasion |
-| `/templates/[id]` | A **live** preview of that design — the real renderer, sample content |
-| `/create` | The fourteen-step builder, with a live phone preview |
-| `/i/[slug]` | A published invitation, as guests see it |
-| `/my-invitations` | Drafts, live links, RSVP replies, guest-book notes, exports |
-| `/demo` | A finished invitation end to end |
+| `/` | Landing page and FAQ |
+| `/templates` | Designs filtered by occasion |
+| `/templates/[id]` | Sample invitation preview |
+| `/create` | Fourteen-step builder |
+| `/i/[slug]` | Published invitation for guests |
+| `/my-invitations` | Signed-in host's drafts, invitations and replies |
+| `/demo` | Sample finished invitation |
 
-## The six designs
+The six designs and eighteen occasion presets are defined in
+`lib/templates.ts` and `lib/occasions.ts`. The renderer, builder and previews
+share those definitions. The app supports seven languages, including
+right-to-left Urdu and Arabic, PNG/PDF exports, QR codes and reduced motion.
 
-Each is a complete world — its own type stack, palette, ornament, background
-motif and ambient motion, defined in one place in `lib/templates.ts`.
+## Browser testing
 
-| Design | Palette | Motion |
-| --- | --- | --- |
-| Royal Gold | Black, gold leaf | Drifting gold dust, candle flames |
-| Romantic Blush | Soft pink, rose gold | Falling petals, rising hearts |
-| Moonlight Garden | Navy, silver | Twinkling stars, strung fairy lights |
-| Floral Paradise | White, green, lavender | Drifting leaves, crossing butterflies |
-| Modern Luxury | White, beige, gold | Slow blurred orbs, glassmorphism |
-| Royal Mughal | Maroon, emerald, antique gold | Swaying lanterns, gold dust |
-
-Adding a seventh means adding one entry to `TEMPLATES` — the renderer, the
-gallery, the builder and the card preview all read from it.
-
-## Occasions drive the content
-
-An invitation is not a wedding with the words swapped, so `lib/occasions.ts`
-holds a preset per occasion and everything else reads from it — the builder's
-field labels, the invitation's wording, which sections start switched on, and
-how the names are typeset.
-
-Three name modes cover all eighteen:
-
-| Mode | Used by | Renders as |
-| --- | --- | --- |
-| `couple` | wedding, nikah, walima, engagement, anniversary, mehndi, reception | Two names stacked around a join word, in the design's script face |
-| `single` | birthday, baby shower, bridal shower, graduation, eid, ramadan, house warming, farewell | One name large, with an optional line beneath — "turns thirty", "Class of 2026" |
-| `org` | corporate, business, school | Event title in the display serif, with the host company in small caps |
-
-So picking **Birthday** gives you "Whose birthday is it?" with a *Birthday name*
-and a *Milestone* field, an invitation reading "Please join us to celebrate /
-Ayaan / turns thirty", no parents or wedding-party sections, and a guest book
-titled "Birthday Wishes". Picking **Corporate Events** gives an event title, an
-agenda instead of an order of the day, travel and FAQ sections, and no gifts.
-
-Changing the occasion mid-build re-words anything you haven't personally
-edited and leaves everything you have typed exactly as it is
-(`applyOccasion`).
-
-## How it's put together
-
-```
-app/                     routes (App Router, mostly static)
-components/
-  landing/               marketing sections
-  invitation/            the renderer: envelope, sections, RSVP, guest book, QR
-  builder/               the 14-step studio + live preview
-  dashboard/             my-invitations
-  fx/                    ambient effects (gold dust, petals, stars, lanterns…)
-  ui/                    buttons, fields, toggles
-lib/
-  templates.ts           the six designs
-  categories.ts          the eighteen occasions
-  occasions.ts           per-occasion wording, sections and name mode
-  features.ts            the twenty-two features
-  steps.ts               the fourteen builder steps (shared with the landing page)
-  storage.ts             IndexedDB persistence
-  i18n.ts                seven languages, incl. RTL
-  export.ts              PNG + PDF export
+```powershell
+node node_modules/@playwright/test/cli.js test
 ```
 
-**Stack:** Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v4 ·
-Framer Motion · React Hook Form + Zod · Lucide · idb-keyval · qrcode ·
-html-to-image + jsPDF.
+To watch the browser and retain Full HD recordings:
 
-### Storage
+```powershell
+node node_modules/@playwright/test/cli.js test --config=playwright.watch.config.ts
+```
 
-Invitations, photographs, music, RSVP replies and guest-book notes are stored
-in the visitor's own browser via IndexedDB (`lib/storage.ts`). That is what
-makes the product free and account-less: there is no server to pay for and no
-personal data leaving the device.
+Recordings go to `test-videos`. See [the testing guide](tests/e2e/README.md) for
+coverage and setup. Local browser tests can validate UI behavior and simulated
+backend responses; they do not prove that a real Supabase deployment is
+configured. Run the deployment checks against your own project as well.
 
-The consequence is honest and stated in the UI: an invitation opens on the
-device that made it. `lib/storage.ts` is a single, narrow module — swapping it
-for Firestore + Cloudinary means reimplementing about a dozen functions and
-nothing else. Set `NEXT_PUBLIC_ADSENSE_CLIENT` to enable real ad units; without
-it, the ad slots render a labelled placeholder.
-
-### Accessibility
-
-- Every scroll-triggered reveal goes through `Reveal` / `InvReveal`, which
-  render their children plainly when `prefers-reduced-motion: reduce` is set.
-  Content is never left invisible because an animation didn't run.
-- All ambient particle layers carry `data-fx` and are removed wholesale by one
-  CSS rule under reduced motion.
-- Keyboard-only focus rings, a skip link, labelled form controls, `aria-pressed`
-  on toggle buttons, and a `dir="rtl"` switch for Urdu and Arabic.
-
-### Performance
-
-Everything except the published-invitation route is statically prerendered.
-The heavy export libraries (`html-to-image`, `jsPDF`) load on click rather than
-on page load. Ambient effects are CSS-transform driven and seeded from a
-deterministic PRNG, so they cost nothing per frame and never cause hydration
-mismatches.
-
-## Notes
-
-Fonts are loaded from Google Fonts via a `<link>` in `app/layout.tsx` rather
-than `next/font`, because the build environment had no outbound access to the
-font CDN. If your build environment does, switching to `next/font/google`
-self-hosts them and removes the extra connection.
+The stack is Next.js 15, React 19, TypeScript, Tailwind CSS, Framer Motion and
+Supabase, with `html-to-image` and jsPDF loaded for exports.

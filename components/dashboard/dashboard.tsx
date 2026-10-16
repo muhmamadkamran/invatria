@@ -12,7 +12,7 @@ import {
   deleteInvitation, listGuestMessages, listInvitations, listRsvps, onStoreChange,
   rsvpSummary,
 } from "@/lib/storage";
-import { setActiveInvitation } from "@/components/builder/context";
+import { AccountGate } from "@/components/auth/account-gate";
 import type { GuestMessage, Invitation, RsvpResponse } from "@/lib/types";
 import { getTemplate } from "@/lib/templates";
 import { getCategory } from "@/lib/categories";
@@ -31,12 +31,14 @@ interface Row {
   summary: { status: string; replies: number; heads: number }[];
 }
 
-export function Dashboard() {
+function DashboardContent() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const load = async () => {
+      try {
       const invs = await listInvitations();
       setRows(
         await Promise.all(
@@ -48,6 +50,10 @@ export function Dashboard() {
           })),
         ),
       );
+      setError("");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not load your invitations. Please reload to try again.");
+      }
     };
     load();
     return onStoreChange(load);
@@ -60,12 +66,12 @@ export function Dashboard() {
           eyebrow="Your work"
           title="My"
           italic="invitations"
-          lead="Everything you've made on this device, with replies and guest-book notes attached. Nothing here expires."
+          lead="Your saved invitations, replies and guest-book notes, available from your account on any device."
         />
 
         <ClaimBanner className="mt-14" />
 
-        {rows === null ? (
+        {error ? <p role="alert" className="mt-12 text-center text-sm text-red-600 dark:text-red-400">{error}</p> : rows === null ? (
           <p className="mt-16 text-center text-sm text-charcoal-400">Loading…</p>
         ) : rows.length === 0 ? (
           <div className="mx-auto mt-16 max-w-md rounded-[1.75rem] border border-dashed border-[var(--color-line)] p-12 text-center">
@@ -73,7 +79,7 @@ export function Dashboard() {
               Nothing here yet
             </p>
             <p className="mt-3 text-sm leading-relaxed text-charcoal-400">
-              Your invitations live in this browser. Make one and it will appear
+              Your invitations are saved online. Make one and it will appear
               here, along with every reply it collects.
             </p>
             <Button asChild className="mt-7">
@@ -165,9 +171,8 @@ export function Dashboard() {
                         asChild
                         size="sm"
                         variant="outline"
-                        onClick={() => setActiveInvitation(inv.id)}
                       >
-                        <Link href="/create">
+                        <Link href={`/create?draft=${inv.id}`}>
                           <Pencil />
                           Edit
                         </Link>
@@ -251,7 +256,7 @@ export function Dashboard() {
         {rows?.length ? (
           <div className="mt-12 text-center">
             <Button asChild variant="outline">
-              <Link href="/create" onClick={() => localStorage.removeItem("invitra:active")}>
+              <Link href="/create">
                 <Plus />
                 Start another
               </Link>
@@ -261,4 +266,8 @@ export function Dashboard() {
       </Container>
     </Section>
   );
+}
+
+export function Dashboard() {
+  return <AccountGate purpose="view your invitations"><DashboardContent /></AccountGate>;
 }

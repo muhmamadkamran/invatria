@@ -1,180 +1,217 @@
 # Deploying Invitra
 
-Target architecture:
+Invitra uses a hosted Next.js website and Supabase for Auth, Postgres, Storage
+and guest-response Edge Functions. All saved invitation and guest data belongs
+in Supabase. The app does not fall back to browser storage when configuration
+is missing.
 
-```
-User → Netlify (Next.js) → Supabase (Postgres + Auth + Storage + Edge Functions)
-```
+## Current verification status
 
-There is no separate backend server, and there never was one — the app used to
-keep everything in the browser's IndexedDB. That code path still exists as an
-offline fallback, but Supabase is now the real backend.
+The linked Supabase project is configured for the local frontend in ignored
+`.env.local`. On 2026-10-16, real Auth/table/RPC/guest-function connection checks
+passed, an existing invitation opened without login in two fresh browsers, and
+a newly confirmed test account signed in successfully. Email confirmation was
+required and enforced by Auth.
 
-Everything below has been written and verified locally. The steps that need
-your credentials are marked **you**; I could not run those from here.
+The account-restriction migration has now been applied and checked against the
+real project: the registered-account helper accepts the confirmed test user,
+and both plain public-key and anonymous-session publish attempts are denied
+with `42501`. No probe invitation rows were created.
 
----
+Real browser checks also verified cover upload, cloud saving/publishing, guest
+RSVP and guest-book records, host management and resuming the same invitation
+from another signed-in browser. Full HD evidence is under
+`test-videos/live-supabase-authenticated`. Disposable test invitations were
+retained for review. One anonymous policy-test user was also created; its ID
+is saved as `SUPABASE_ANONYMOUS_TEST_USER_ID` in ignored `.env.local` for later
+cleanup through the Supabase dashboard.
 
-## 1. Create the Supabase project — *you*
+These local checks do not establish that a public frontend deployment has the
+same code or configuration. The steps below configure and verify that deployment.
 
-1. New project at [supabase.com](https://supabase.com). Pick a region near your
-   guests, not near you.
-2. **Authentication → Sign In / Providers:**
-   - **Anonymous sign-ins → enable.** Ownership starts as an anonymous user so
-     people can build before signing up. Nothing works without this.
-   - **Email → enable**, with "Confirm email" on. This is the account people
-     upgrade *into*.
-3. **Authentication → URL Configuration:**
-   - Site URL: your Netlify domain (`http://localhost:3000` while developing).
-   - Redirect URLs: add `<your-domain>/auth/callback` and
-     `<your-domain>/auth/reset`. Add `http://localhost:3000/**` too so local
-     development works.
-4. Copy the Project URL and the `anon` key from **Project Settings → API**.
+## 1. Configure a Supabase project
 
-> **Email delivery.** Supabase's built-in SMTP is rate-limited to a handful of
-> messages an hour and is explicitly not for production — confirmation and
-> password-reset emails will silently stop arriving. Set your own SMTP under
-> **Project Settings → Authentication → SMTP Settings** (Resend, Postmark and
-> SES all work) before you launch.
+If you are using the already verified Supabase project, skip creating another
+project or reapplying migrations. To deploy only the frontend:
 
-> **Free tier warning.** Free Supabase projects pause after a period of
-> inactivity. An invitation published in March for a wedding in September will
-> sit untouched for weeks, and a paused project means a dead link. Use a paid
-> tier for anything real.
+1. Commit and push the current source changes to GitHub. Keep `.env.local` and
+   all test account credentials out of Git.
+2. In Netlify, import the `muhmamadkamran/invatria` repository. The existing
+   `netlify.toml` sets `npm run build`, publish directory `.next`, and Node 24.
+   Netlify supports this Next.js App Router application through its adapter:
+   [Next.js on Netlify](https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/).
+3. Set these three Netlify variables before the production build, available to
+   Builds and Functions: `NEXT_PUBLIC_SUPABASE_URL`,
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_SITE_URL`. Copy only the
+   public URL/key values from `.env.local`; set the site URL to the final
+   HTTPS origin, for example `https://YOUR_SITE.netlify.app`.
+4. In Supabase Authentication URL Configuration, set the Site URL to that
+   origin and add its exact `/auth/callback` and `/auth/reset` redirect paths.
+5. In Supabase Edge Function secrets, update `ALLOWED_ORIGINS` to the exact
+   HTTPS frontend origin, without a trailing slash. To keep local testing,
+   use `https://YOUR_SITE.netlify.app,http://localhost:3000`. This app's CORS
+   parser uses exact origins; wildcard subdomains are not supported.
+6. Deploy/rebuild the frontend, then verify signup/email confirmation, login,
+   publishing, an incognito share link, RSVP and guest-book replies on the
+   deployed domain. Confirm custom SMTP is configured for public signup:
+   [Supabase SMTP requirements](https://supabase.com/docs/guides/auth/auth-smtp).
 
-## 2. Apply the schema — *you*
+The existing invitation slug stays the same: a live link is
+`https://YOUR_SITE.netlify.app/i/<slug>`. Previously copied localhost URLs do
+not automatically change into public links.
 
-```bash
-npx supabase login
-npx supabase link --project-ref <your-project-ref>
-npx supabase db push
-```
+Node 24 matches the locally tested runtime and is an LTS release; Node 20 is
+end-of-life. See the [Node.js release status](https://nodejs.org/en/about/previous-releases).
 
-Or paste `supabase/migrations/20260810120000_init.sql` into the SQL editor.
+The following detailed setup sections are for a new project or for checking
+individual settings on the existing project.
 
-It creates `invitations`, `rsvps`, `guest_messages` and `rate_limits`; the
-indexes; the `set_owner` and `updated_at` triggers; every RLS policy; the
-`is_slug_available` and `rsvp_summary` functions; and the three public storage
-buckets with per-user write scoping.
+Create a project and enable the Email authentication provider. Enable email
+confirmation for account verification. The app requires an email account to
+open the builder, save, upload or publish; anonymous sign-ins are not required and should be
+disabled for a new project.
 
-### Verify it
+Under Authentication URL Configuration, set your public website as the Site
+URL and allow these redirects:
 
-The policies ship with an adversarial test suite. Run it before you trust it:
-
-```bash
-npx supabase db reset          # local stack
-psql "$DATABASE_URL" -f supabase/tests/rls.test.sql | grep -E 'PASS|FAIL'
-```
-
-All 22 lines must read PASS. They currently do — see `supabase/tests/README.md`
-for how to run it against a throwaway Postgres with no Supabase account.
-
-## 3. Deploy the Edge Function — *you*
-
-RSVPs and guest-book notes are the only writes a stranger can make, so RLS
-grants anonymous users **no INSERT at all**. They go through this function
-instead, which checks the invitation is published, throttles per IP, optionally
-verifies a Turnstile token, and only then writes with the service-role key.
-
-```bash
-npx supabase functions deploy submit-response
-
-npx supabase secrets set ALLOWED_ORIGINS="https://your-site.netlify.app"
-# optional, for captcha:
-npx supabase secrets set TURNSTILE_SECRET_KEY="0x..."
+```text
+https://YOUR_SITE/auth/callback
+https://YOUR_SITE/auth/reset
 ```
 
-`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically.
+For local development, also allow your actual development origin and those
+paths, for example `http://localhost:3000/auth/callback` and
+`http://localhost:3000/auth/reset`. Configure email delivery for confirmation
+and password-reset messages, then test it with an account you control.
 
-**If you skip this step, RSVP and the guest book will fail** — by design. The
-service-role key must never reach the browser, so there is no fallback path.
+Copy the Project URL and public project key from the project API settings.
+Add them to `.env.local` for local work:
 
-## 4. Deploy to Netlify — *you*
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_PUBLIC_PROJECT_KEY
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
 
-Connect the repo. `netlify.toml` already sets the build command, Node 20, the
-Next.js runtime plugin, and security headers.
+Never put a service-role key in a `NEXT_PUBLIC_` variable or client code.
 
-Set these under **Site configuration → Environment variables**:
+## 2. Apply every database migration
+
+With the Supabase CLI installed:
+
+```powershell
+supabase login
+supabase link --project-ref YOUR_PROJECT_REF
+supabase db push
+```
+
+Apply **all** files under `supabase/migrations` in filename order. If using the
+SQL editor instead of the CLI, execute every migration there in that order.
+The original schema alone does not include later account restrictions.
+
+The migrations create invitations, RSVPs, guest messages, rate limiting,
+database functions, row-level security and Storage buckets. Confirm that they
+finished successfully in your project. Run the SQL policy checks described in
+[supabase/tests/README.md](supabase/tests/README.md) against a test project;
+read the suite's setup instructions before running it.
+
+## 3. Deploy the guest-response function
+
+Guests submit RSVPs and guest-book messages without accounts. Their writes go
+through `submit-response`; the browser cannot insert directly into response
+tables. The handler checks that an invitation is published, validates the
+request and applies rate limiting before writing with its server-only key.
+
+Deploy it as a public endpoint:
+
+```powershell
+supabase functions deploy submit-response --no-verify-jwt
+supabase secrets set ALLOWED_ORIGINS="https://YOUR_SITE"
+```
+
+The public function must accept requests without a signed-in user's JWT.
+Supabase documents this configuration in its
+[function configuration guide](https://supabase.com/docs/guides/functions/function-configuration).
+JWT verification is disabled only for this guest endpoint; database policies
+and the handler's request checks still apply.
+
+Supabase supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to the Edge
+Function. Keep the service-role key out of the website environment.
+
+If enabling Cloudflare Turnstile, configure both the function's
+`TURNSTILE_SECRET_KEY` and the website's `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
+Allow your development origin in `ALLOWED_ORIGINS` when testing locally.
+
+## 4. Deploy the website
+
+Connect the repository to Netlify. `netlify.toml` contains the Next.js build
+configuration. Set these variables for the deployment **before building**:
 
 | Variable | Value |
 | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://<ref>.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | the anon key |
-| `NEXT_PUBLIC_SITE_URL` | your final domain |
-| `NEXT_PUBLIC_ADSENSE_CLIENT` | optional |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | optional |
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your public project key |
+| `NEXT_PUBLIC_SITE_URL` | Your final HTTPS website origin |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Optional captcha site key |
+| `NEXT_PUBLIC_ADSENSE_CLIENT` | Optional advertising client |
 
-Both Supabase values are meant to be public — the anon key grants nothing on its
-own because every table is behind RLS.
+Rebuild after changing public variables. Update the Supabase Site URL,
+redirect allowlist and function `ALLOWED_ORIGINS` to match the final domain.
+Public variables are included in browser JavaScript; authorization comes from
+the user's session and database policies.
 
-**Never set `SUPABASE_SERVICE_ROLE_KEY` on Netlify.** It belongs only in
-Supabase secrets, read by the Edge Function. Anything prefixed `NEXT_PUBLIC_`
-is compiled into the JavaScript bundle and readable by everyone.
+## 5. Verify the live workflow
 
-## 5. Point Supabase back at Netlify — *you*
+Use two independent browser contexts, such as a normal browser window and a
+private window. Test with disposable invitations and accounts you control.
 
-**Authentication → URL Configuration → Site URL**: your Netlify domain, plus
-`https://*.netlify.app` under redirect URLs if you want deploy previews to work.
+1. Before signing in, browse templates and sample invitation previews. Opening
+   `/create` or My Invitations must request a signed-in account. No invitation
+   content should be stored in IndexedDB or localStorage.
+2. Sign up and confirm the email, then sign in. Create an invitation and wait
+   for a successful cloud-save indicator. Verify its owner and data in the
+   Supabase `invitations` table.
+3. Upload a cover and music. Confirm the objects appear in Supabase Storage
+   under your user's folder, then reload the builder and check the media.
+4. Publish with a unique slug. Copy the public HTTPS `/i/[slug]` link and open
+   it in the private window without signing in. Confirm the invitation and
+   media render. A `localhost` link cannot test sharing to another device.
+5. Submit an RSVP and a guest-book message from the private window. Verify
+   the records in Supabase and the host dashboard. Guests must not be able to
+   view the host's RSVP list or edit the invitation.
+6. Sign into the same account in another browser. Confirm that its drafts,
+   invitations and replies appear. Sign into a different account and confirm
+   it sees only its own invitations in the dashboard.
+7. Confirm that an unpublished invitation does not open through a public
+   link. Confirm that unauthenticated or anonymous direct publish requests
+   fail at the database as well as in the UI.
+8. Test password reset, deletion, a failed network save and retry. Failed
+   saves must show an error, and must not claim the draft is saved.
 
-Then re-run step 3's `ALLOWED_ORIGINS` with the final domain, so the Edge
-Function's CORS headers match.
+## Existing browser data
 
----
+Historical `storage-local` and migration modules remain in the repository for
+reference, but are disconnected from the app. Automatic import is disabled.
+Old IndexedDB records are not deleted or silently assigned to the next person
+who signs in. If older work needs recovery, implement a separate authenticated
+import that verifies invitation and media uploads before removing any source
+records.
 
-## Smoke test after deploying
+Session cookies keep an account signed in and the theme preference may remain
+in browser storage. Invitation content, media and guest responses are stored
+in Supabase. A signed-in host's changes awaiting a cloud save live only in page
+memory and are lost if the page reloads before the save succeeds.
 
-Work through these on the live site. They cover every path that changed:
+## Media cleanup
 
-1. **Create** — `/create`, pick a design, fill steps 3–6. The header should show
-   "Saved" within a second. Reload; your work is still there.
-2. **Upload** — add a cover image at step 2. It should land in Supabase
-   Storage under `covers/<your-user-id>/…` (check the dashboard).
-3. **Publish** — step 14. Claim a slug; it should report "Available", then
-   publish cleanly. If you see the amber "this link only works in this browser"
-   box, your env vars did not reach the build.
-4. **Share** — open the link **in a different browser or on your phone**. This
-   is the flow that was impossible before. It must render without a spinner.
-5. **Preview** — paste the link into WhatsApp or Slack. You should get a title,
-   description and, if you set a cover, an image.
-6. **RSVP** — reply as a guest from that other browser. Then open
-   `/my-invitations` as the host: the head count must include the reply. If it
-   doesn't, the Edge Function is not deployed.
-7. **Guest book** — leave a note on one device; it should appear on the other
-   within a second or two, via Realtime.
-8. **Rate limit** — submit nine RSVPs quickly. The ninth should be refused.
-9. **Isolation** — in a private window, try `/my-invitations`. It must be empty:
-   that browser is a different anonymous user.
-10. **Claim an account** — build something, then at publish use "Save my work".
-    You should get a confirmation email; clicking it keeps the *same* user id,
-    so the invitation you just made is still listed. Check
-    **Authentication → Users**: the row should flip from anonymous to your email
-    rather than a second user appearing.
-11. **Sign in elsewhere** — on another device, sign in with that email. Your
-    invitations and their replies should be there.
-12. **Password reset** — use "Forgot your password?", open the emailed link, set
-    a new one. You should land signed in on `/auth/reset` and be able to continue.
+Replacing or removing a photo or track updates its invitation reference when
+the cloud save succeeds. Previous uploads remain in Supabase Storage so a
+failed save or concurrent edit cannot destroy media still used by an invitation.
+Unused replacement uploads currently require a separate server-side garbage
+collection job; no automatic collection job is deployed by this repository.
 
-## Things worth knowing
-
-**Existing local invitations migrate themselves.** Anyone who used the app
-before the backend existed gets their invitations lifted out of IndexedDB on
-first load, media and all (`lib/migrate.ts`). The local copies are left in
-place, so a half-failed upload can be retried.
-
-**Accounts are optional but recoverable.** A visitor starts anonymous and can
-publish without signing up. At publish they're offered an account, and the
-upgrade happens in place — Supabase keeps the same `user.id`, so nothing has to
-be migrated and the RLS policies (which key off `owner_id`) are untouched.
-
-Until someone claims an account their session *is* the only key to their
-invitations, so the UI refuses to sign an anonymous user out, and warns before
-signing in on a device that has unclaimed work on it.
-
-**No Content-Security-Policy is set.** Next.js emits inline bootstrap scripts,
-so a correct policy needs per-request nonces via middleware. Adding one blind
-would either break the app or be security theatre — worth doing once you can
-test against the real deploy.
-
-**Guest data is now on a server.** You are holding names and email addresses,
-so GDPR applies. Hosts can already delete an invitation, which cascades to
-every reply and note. A per-guest deletion route is the obvious next addition.
+Deleting an invitation commits the database deletion first, then attempts to
+remove its owned media only when no remaining invitation in that account
+references it. The check includes cover, gallery, music, story and family
+images. Failed cleanup leaves cloud objects behind and does not undo or
+misreport a successful invitation deletion.

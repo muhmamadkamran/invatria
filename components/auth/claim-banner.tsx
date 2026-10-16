@@ -7,11 +7,7 @@ import { useAuthUI } from "./auth-ui";
 import { cn } from "@/lib/utils";
 
 /**
- * Shown to a visitor who has made something but has no account yet.
- *
- * Deliberately placed where it is true rather than where it is loudest: at
- * publish, and above their list of invitations — the two moments they have
- * something to lose.
+ * Explains the account requirement before saving or publishing.
  */
 export function ClaimBanner({
   className,
@@ -21,11 +17,11 @@ export function ClaimBanner({
   /** "publish" wording is used on the last builder step. */
   tone?: "default" | "publish";
 }) {
-  const { enabled, loading, isAnonymous, email } = useAuth();
+  const { enabled, loading, isAnonymous, email, emailConfirmed } = useAuth();
   const { openAuth } = useAuthUI();
 
   if (!enabled || loading) return null;
-  if (email && !isAnonymous) return null;
+  if (email && !isAnonymous && emailConfirmed) return null;
 
   return (
     <div
@@ -41,13 +37,13 @@ export function ClaimBanner({
       <div className="mt-4 min-w-0 flex-1 sm:mt-0">
         <p className="font-serif text-[0.95rem] text-[var(--color-heading)]">
           {tone === "publish"
-            ? "Save this before you share it"
-            : "These are only saved to this browser"}
+            ? "Sign in before publishing"
+            : "Save your invitations to your account"}
         </p>
         <p className="mt-1 text-xs leading-relaxed text-charcoal-400">
           {tone === "publish"
-            ? "Your link will work either way — but without an account you won't be able to edit it, or see who replied, from any other device."
-            : "Add an email and you can reach them from your phone, and they'll survive clearing your browser data."}
+            ? "Create an account or sign in to save your invitation and publish a link your guests can open."
+            : "Create an account or sign in with your confirmed email to make and save invitations and access replies from any device."}
         </p>
       </div>
 
@@ -56,7 +52,7 @@ export function ClaimBanner({
         className="mt-4 w-full shrink-0 sm:mt-0 sm:w-auto"
         onClick={() => openAuth("claim")}
       >
-        Save my work
+        Sign in or sign up
       </Button>
     </div>
   );

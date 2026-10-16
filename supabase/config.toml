@@ -1,0 +1,6 @@
+project_id = "invitra"
+
+# Guests submit without accounts. The handler checks publication, validates
+# input, enforces rate limits and optionally checks Turnstile before writing.
+[functions.submit-response]
+verify_jwt = false

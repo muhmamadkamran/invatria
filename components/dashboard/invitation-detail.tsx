@@ -13,7 +13,7 @@ import {
   deleteGuestMessage, deleteRsvp, listGuestMessages, listRsvps,
   loadInvitation, onResponsesChange, rsvpSummary,
 } from "@/lib/storage";
-import { setActiveInvitation } from "@/components/builder/context";
+import { AccountGate } from "@/components/auth/account-gate";
 import { getTemplate } from "@/lib/templates";
 import { getCategory } from "@/lib/categories";
 import { formatLongDate, formatTime, cn } from "@/lib/utils";
@@ -38,7 +38,7 @@ const STATUS_TONE: Record<string, string> = {
   maybe: "border-amber-400/40 bg-amber-400/10 text-amber-700 dark:text-amber-400",
 };
 
-export function InvitationDetail({ id }: { id: string }) {
+function InvitationDetailContent({ id }: { id: string }) {
   const [inv, setInv] = useState<Invitation | null>(null);
   const [loading, setLoading] = useState(true);
   const [rsvps, setRsvps] = useState<RsvpResponse[]>([]);
@@ -49,10 +49,12 @@ export function InvitationDetail({ id }: { id: string }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [origin, setOrigin] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => setOrigin(window.location.origin), []);
 
   const load = useCallback(async () => {
+    try {
     const found = await loadInvitation(id);
     setInv(found);
     setLoading(false);
@@ -65,6 +67,12 @@ export function InvitationDetail({ id }: { id: string }) {
     setRsvps(r);
     setNotes(n);
     setSummary(s);
+    setError("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not load this invitation. Please reload to try again.");
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
   useEffect(() => {
@@ -86,6 +94,8 @@ export function InvitationDetail({ id }: { id: string }) {
 
   const shown = filter === "all" ? rsvps : rsvps.filter((r) => r.status === filter);
   const url = inv && origin ? `${origin}/i/${inv.slug}` : "";
+
+  if (error) return <p role="alert" className="mx-auto my-32 max-w-lg px-6 text-center text-sm text-red-600 dark:text-red-400">{error}</p>;
 
   if (loading) {
     return (
@@ -161,9 +171,8 @@ export function InvitationDetail({ id }: { id: string }) {
               <Button
                 asChild
                 size="sm"
-                onClick={() => setActiveInvitation(inv.id)}
               >
-                <Link href="/create">
+                <Link href={`/create?draft=${inv.id}`}>
                   <Pencil />
                   Edit
                 </Link>
@@ -287,10 +296,9 @@ export function InvitationDetail({ id }: { id: string }) {
             <Button
               size="sm"
               className="mt-4"
-              onClick={() => setActiveInvitation(inv.id)}
               asChild
             >
-              <Link href="/create">Finish and publish it</Link>
+              <Link href={`/create?draft=${inv.id}`}>Finish and publish it</Link>
             </Button>
           </div>
         )}
@@ -488,4 +496,8 @@ export function InvitationDetail({ id }: { id: string }) {
       </Container>
     </Section>
   );
+}
+
+export function InvitationDetail({ id }: { id: string }) {
+  return <AccountGate purpose="view your invitations"><InvitationDetailContent id={id} /></AccountGate>;
 }

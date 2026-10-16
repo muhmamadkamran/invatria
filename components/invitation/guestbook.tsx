@@ -18,7 +18,7 @@ export function Guestbook({ invitation }: { invitation: Invitation }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const load = () => listGuestMessages(invitation.id).then(setMessages);
+    const load = () => listGuestMessages(invitation.id).then(setMessages).catch(() => setError("Could not load guest-book notes. Please reload to try again."));
     load();
     /* Also subscribes to Realtime in cloud mode, so a note left on someone
        else's phone appears here without a refresh. */

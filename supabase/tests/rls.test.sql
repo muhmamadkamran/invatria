@@ -11,9 +11,9 @@ grant execute on all functions in schema public to anon, authenticated, service_
 grant all on storage.objects to anon, authenticated, service_role;
 
 -- Two hosts and their invitations
-insert into auth.users (id) values
-  ('11111111-1111-1111-1111-111111111111'),
-  ('22222222-2222-2222-2222-222222222222')
+insert into auth.users (id, email, email_confirmed_at) values
+  ('11111111-1111-1111-1111-111111111111', 'alice@example.test', now()),
+  ('22222222-2222-2222-2222-222222222222', 'mallory@example.test', now())
 on conflict do nothing;
 
 set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';

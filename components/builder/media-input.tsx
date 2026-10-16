@@ -2,10 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ImagePlus, Music2, Trash2, X } from "lucide-react";
+import { toast } from "sonner";
 import type { MediaRef } from "@/lib/types";
-import { mediaUrl, putMedia, removeMedia } from "@/lib/storage";
+import { mediaUrl, putMedia } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+
+// Update invitation references here; never delete cloud objects before the
+// invitation is durably saved. Storage cleanup belongs to the persistence layer.
 
 /** A single image slot with drag-and-drop and a draggable focal point. */
 export function CoverInput({
@@ -21,6 +25,7 @@ export function CoverInput({
 }) {
   const [url, setUrl] = useState("");
   const [over, setOver] = useState(false);
+  const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -33,9 +38,18 @@ export function CoverInput({
 
   async function accept(files: FileList | null) {
     const file = files?.[0];
-    if (!file || !file.type.startsWith("image/")) return;
-    if (value) await removeMedia(value);
-    onChange(await putMedia(file, "image"));
+    if (busy || !file || !file.type.startsWith("image/")) return;
+    setBusy(true);
+    try {
+      const uploaded = await putMedia(file, "image");
+      onChange(uploaded);
+    } catch (err) {
+      toast.error("Could not upload photo", {
+        description: err instanceof Error ? err.message : "Please check your connection and try again.",
+      });
+    } finally {
+      setBusy(false);
+    }
   }
 
   function setFocusFromEvent(e: React.MouseEvent<HTMLDivElement>) {
@@ -70,14 +84,14 @@ export function CoverInput({
           </span>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
-            Replace
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => inputRef.current?.click()}>
+            {busy ? "Uploading…" : "Replace"}
           </Button>
           <Button
             size="sm"
             variant="danger"
-            onClick={async () => {
-              await removeMedia(value);
+            disabled={busy}
+            onClick={() => {
               onChange(null);
               setUrl("");
             }}
@@ -90,8 +104,9 @@ export function CoverInput({
           ref={inputRef}
           type="file"
           accept="image/*"
+          disabled={busy}
           hidden
-          onChange={(e) => accept(e.target.files)}
+          onChange={(e) => { void accept(e.target.files); e.target.value = ""; }}
         />
       </div>
     );
@@ -107,7 +122,7 @@ export function CoverInput({
       onDrop={(e) => {
         e.preventDefault();
         setOver(false);
-        accept(e.dataTransfer.files);
+        void accept(e.dataTransfer.files);
       }}
       className={cn(
         "rounded-2xl border-2 border-dashed p-10 text-center transition-colors duration-300",
@@ -119,17 +134,18 @@ export function CoverInput({
         Drop a photograph here
       </p>
       <p className="mt-1 text-xs text-charcoal-400">
-        It stays on this device — nothing is uploaded.
+        Uploaded to your account so guests can see it on any device.
       </p>
-      <Button size="sm" variant="outline" className="mt-5" onClick={() => inputRef.current?.click()}>
-        Choose a file
+      <Button size="sm" variant="outline" className="mt-5" disabled={busy} onClick={() => inputRef.current?.click()}>
+        {busy ? "Uploading…" : "Choose a file"}
       </Button>
       <input
         ref={inputRef}
         type="file"
         accept="image/*"
+        disabled={busy}
         hidden
-        onChange={(e) => accept(e.target.files)}
+        onChange={(e) => { void accept(e.target.files); e.target.value = ""; }}
       />
     </div>
   );
@@ -146,6 +162,7 @@ export function GalleryInput({
   const [urls, setUrls] = useState<Record<string, string>>({});
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -158,12 +175,21 @@ export function GalleryInput({
   }, [value]);
 
   async function accept(files: FileList | null) {
-    if (!files?.length) return;
+    if (busy || !files?.length) return;
+    setBusy(true);
     const added: MediaRef[] = [];
-    for (const f of Array.from(files)) {
-      if (f.type.startsWith("image/")) added.push(await putMedia(f, "image"));
+    try {
+      for (const f of Array.from(files)) {
+        if (f.type.startsWith("image/")) added.push(await putMedia(f, "image"));
+      }
+    } catch (err) {
+      toast.error("Could not upload all photos", {
+        description: err instanceof Error ? err.message : "Please check your connection and try again.",
+      });
+    } finally {
+      if (added.length) onChange([...value, ...added]);
+      setBusy(false);
     }
-    onChange([...value, ...added]);
   }
 
   return (
@@ -180,10 +206,8 @@ export function GalleryInput({
               )}
               <button
                 type="button"
-                onClick={async () => {
-                  await removeMedia(img);
-                  onChange(value.filter((v) => v.id !== img.id));
-                }}
+                disabled={busy}
+                onClick={() => onChange(value.filter((v) => v.id !== img.id))}
                 aria-label="Remove photo"
                 className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
               >
@@ -203,7 +227,7 @@ export function GalleryInput({
         onDrop={(e) => {
           e.preventDefault();
           setOver(false);
-          accept(e.dataTransfer.files);
+          void accept(e.dataTransfer.files);
         }}
         className={cn(
           "rounded-2xl border-2 border-dashed p-8 text-center transition-colors duration-300",
@@ -214,10 +238,11 @@ export function GalleryInput({
           Drop photographs here, or
           <button
             type="button"
+            disabled={busy}
             onClick={() => inputRef.current?.click()}
             className="ml-1 underline decoration-gold/50 underline-offset-4 hover:text-gold-deep"
           >
-            choose files
+            {busy ? "uploading…" : "choose files"}
           </button>
         </p>
         <p className="mt-1 text-xs text-charcoal-200">
@@ -228,8 +253,9 @@ export function GalleryInput({
           type="file"
           accept="image/*"
           multiple
+          disabled={busy}
           hidden
-          onChange={(e) => accept(e.target.files)}
+          onChange={(e) => { void accept(e.target.files); e.target.value = ""; }}
         />
       </div>
     </div>
@@ -244,6 +270,7 @@ export function AudioInput({
   onChange: (ref: MediaRef | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
 
   return (
     <div className="rounded-2xl border border-[var(--color-line)] p-5">
@@ -264,10 +291,8 @@ export function AudioInput({
             size="icon-sm"
             variant="ghost"
             aria-label="Remove track"
-            onClick={async () => {
-              await removeMedia(value);
-              onChange(null);
-            }}
+            disabled={busy}
+            onClick={() => onChange(null)}
           >
             <Trash2 />
           </Button>
@@ -277,20 +302,32 @@ export function AudioInput({
         size="sm"
         variant="outline"
         className="mt-4 w-full"
+        disabled={busy}
         onClick={() => inputRef.current?.click()}
       >
-        {value ? "Choose a different track" : "Choose a track"}
+        {busy ? "Uploading…" : value ? "Choose a different track" : "Choose a track"}
       </Button>
       <input
         ref={inputRef}
         type="file"
         accept="audio/*"
+        disabled={busy}
         hidden
         onChange={async (e) => {
           const f = e.target.files?.[0];
-          if (!f) return;
-          if (value) await removeMedia(value);
-          onChange(await putMedia(f, "audio"));
+          e.target.value = "";
+          if (!f || busy) return;
+          setBusy(true);
+          try {
+            const uploaded = await putMedia(f, "audio");
+            onChange(uploaded);
+          } catch (err) {
+            toast.error("Could not upload track", {
+              description: err instanceof Error ? err.message : "Please check your connection and try again.",
+            });
+          } finally {
+            setBusy(false);
+          }
         }}
       />
     </div>

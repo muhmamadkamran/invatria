@@ -25,7 +25,7 @@ const SHELF = [
   { template: TEMPLATES[5], rotate: 9, x: "58%", y: 34, z: 1, scale: 0.86 },
 ] as const;
 
-const PROMISES = ["No account needed", "No pricing, ever", "Unlimited guests"];
+const PROMISES = ["Free account", "No pricing, ever", "Unlimited guests"];
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null);

@@ -20,6 +20,7 @@ export interface AuthState {
   userId: string | null;
   /** True for a visitor who has not yet claimed an account. */
   isAnonymous: boolean;
+  emailConfirmed: boolean;
   /** False once the first session lookup has settled. */
   loading: boolean;
   /** True when a backend exists at all. */
@@ -31,6 +32,7 @@ const Ctx = createContext<AuthState>({
   email: null,
   userId: null,
   isAnonymous: false,
+  emailConfirmed: false,
   loading: false,
   enabled: false,
   refresh: () => {},
@@ -42,6 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [emailConfirmed, setEmailConfirmed] = useState(false);
   const [loading, setLoading] = useState(supabaseConfigured);
   const [nonce, setNonce] = useState(0);
 
@@ -56,11 +59,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const sb = getSupabase();
       if (!sb || !alive) return;
 
-      const apply = (user: { email?: string; id: string; is_anonymous?: boolean } | null) => {
+      const apply = (user: { email?: string; id: string; is_anonymous?: boolean; email_confirmed_at?: string } | null) => {
         if (!alive) return;
         setEmail(user?.email ?? null);
         setUserId(user?.id ?? null);
         setIsAnonymous(Boolean(user?.is_anonymous));
+        setEmailConfirmed(Boolean(user?.email_confirmed_at));
         setLoading(false);
       };
 
@@ -71,6 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         apply(session?.user ?? null);
       });
       unsubscribe = () => sub.subscription.unsubscribe();
+    }).catch(() => {
+      if (!alive) return;
+      setEmail(null);
+      setUserId(null);
+      setIsAnonymous(false);
+      setEmailConfirmed(false);
+      setLoading(false);
     });
 
     return () => {
@@ -84,11 +95,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       userId,
       isAnonymous,
+      emailConfirmed,
       loading,
       enabled: supabaseConfigured,
       refresh,
     }),
-    [email, userId, isAnonymous, loading, refresh],
+    [email, userId, isAnonymous, emailConfirmed, loading, refresh],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
@@ -96,6 +108,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 /** True when the visitor has a real, claimed account. */
 export function useHasAccount() {
-  const { email, isAnonymous, enabled } = useAuth();
-  return enabled && Boolean(email) && !isAnonymous;
+  const { email, isAnonymous, emailConfirmed, enabled } = useAuth();
+  return enabled && Boolean(email) && !isAnonymous && emailConfirmed;
 }

@@ -57,24 +57,8 @@ export function InvitationView({
   const [opened, setOpened] = useState(!useEnvelope);
   const [cover, setCover] = useState("");
 
-  /* The reveal is a moment, not a toll gate. Once a guest has opened this
-     invitation, a reload or a return trip goes straight to the content. */
-  useEffect(() => {
-    if (!useEnvelope) return;
-    try {
-      if (sessionStorage.getItem(`invitra:opened:${invitation.id}`)) setOpened(true);
-    } catch {
-      /* private mode — the envelope simply plays again */
-    }
-  }, [useEnvelope, invitation.id]);
-
   function markOpened() {
     setOpened(true);
-    try {
-      sessionStorage.setItem(`invitra:opened:${invitation.id}`, "1");
-    } catch {
-      /* nothing to remember it with; harmless */
-    }
   }
 
   const heroRef = useRef<HTMLDivElement>(null);

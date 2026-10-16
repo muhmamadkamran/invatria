@@ -4,7 +4,7 @@ import { Builder } from "@/components/builder/builder";
 export const metadata: Metadata = {
   title: "Create an invitation",
   description:
-    "Design your invitation in fourteen guided steps — template, photos, names, date, venue, schedule, RSVP and publish. Free, with no account required.",
+    "Design your invitation in fourteen guided steps. Sign in to save it online and publish a link for your guests. Every design is free.",
   robots: { index: false },
 };
 

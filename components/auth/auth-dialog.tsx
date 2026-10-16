@@ -14,8 +14,8 @@ export type AuthMode = "claim" | "signin" | "reset";
 
 const COPY: Record<AuthMode, { title: string; lead: string; cta: string }> = {
   claim: {
-    title: "Save your invitations",
-    lead: "Add an email and a password so you can come back to this from any device — and so nothing is lost if you clear your browser.",
+    title: "Create your account",
+    lead: "Use your email and a password to save invitations online and publish links for your guests.",
     cta: "Create my account",
   },
   signin: {
@@ -44,7 +44,7 @@ export function AuthDialog({
   onClose: () => void;
   /** Where the emailed confirmation link should land. */
   redirectPath?: string;
-  /** When set, offers a way out — used so publishing is never held hostage. */
+  /** Optional dismissal action for non-publishing dialogs. */
   skipLabel?: string;
   onSkip?: () => void;
   onSuccess?: () => void;
@@ -94,6 +94,7 @@ export function AuthDialog({
     setBusy(true);
     setError("");
 
+    try {
     const auth = await import("@/lib/supabase/auth");
     const result =
       mode === "claim"
@@ -107,9 +108,14 @@ export function AuthDialog({
     if (!result.ok) return setError(result.error);
 
     refresh();
-    onSuccess?.();
     if (result.needsConfirmation) return setSent(true);
+    if (mode !== "reset") onSuccess?.();
     onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not reach sign in. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   const copy = COPY[mode];
@@ -161,7 +167,7 @@ export function AuthDialog({
                   <span className="text-[var(--color-heading)]">{email}</span>.
                   {mode === "reset"
                     ? " Open it to choose a new password."
-                    : " Open it and your account is secured — your invitations are already saved."}
+                    : " Confirm your email, then sign in to save and publish invitations."}
                 </p>
                 <Button variant="outline" className="mt-7" onClick={onClose}>
                   Close

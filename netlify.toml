@@ -3,7 +3,7 @@
   publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "24"
   # Netlify's Next.js runtime handles SSR, ISR and the image CDN.
   NEXT_TELEMETRY_DISABLED = "1"
 

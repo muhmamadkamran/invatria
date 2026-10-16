@@ -13,11 +13,11 @@ const QA = [
   },
   {
     q: "Do I need an account?",
-    a: "Not to make one. You can design an invitation, publish it and share the link without ever signing up. Adding an email afterwards is optional and free — it just means your invitations follow you between devices and survive clearing your browser.",
+    a: "You can browse designs and sample invitation previews before signing in. To create your own invitation, save your work, upload photos or music, and publish a shareable link, create a free account or sign in. Guests can open your published link and reply without an account.",
   },
   {
     q: "Where do my photos and music go?",
-    a: "Straight into this browser's local storage — they never leave your device unless you connect a media host of your own. Nothing is uploaded to us by default.",
+    a: "After you sign in, uploads are stored in the cloud with your invitation. Your published invitation loads those photos and music for guests on other devices. Drafts, uploads, RSVPs and guest-book messages are saved to your account rather than your browser.",
   },
   {
     q: "Can guests reply without downloading anything?",

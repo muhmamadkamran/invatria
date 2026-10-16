@@ -20,5 +20,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/auth/reset?error=link`);
+  // A consumed signup link may still belong to an already-confirmed account.
+  // Offer normal sign-in instead of sending signup visitors to password reset.
+  return NextResponse.redirect(`${origin}/create?auth=link`);
 }
