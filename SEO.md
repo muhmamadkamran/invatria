@@ -1,6 +1,50 @@
+# Current address: https://invitra-ai.netlify.app
+
+The owner renamed the Netlify hostname from invatria.netlify.app. The new live
+site was reachable, but its canonical and sitemap still referenced the old
+host, which returned 404. The repository configuration is now corrected.
+See [migration/README.md](migration/README.md) for publishing, Search Console,
+Supabase settings and the prepared old-host redirect package. Earlier live
+observations below refer to the previous hostname unless noted otherwise.
+
 # Search readiness
 
-Confirmed production origin: `https://invatria.netlify.app` (2026-10-27).
+## Branded-search diagnosis
+
+The owner searched for `Invatria` and chose to retain `Invitra` as the public
+brand, with `Invatria` as an alternate. The live check returned HTTP 200 for the
+homepage, allowed indexing and crawling, and served the Google verification
+file. It still displayed the older homepage title and returned HTTP 404 for
+`/invitations`, showing the latest local SEO expansion was not deployed.
+
+The local homepage now identifies the primary name `Invitra` and alternate
+`Invatria` through WebSite and Organization JSON-LD, a brand-first title,
+description, visible footer text and the About page. The primary logo spelling
+is unchanged. This implements Google's site-name preference mechanism; it does
+not establish that Google has indexed or ranked the site.
+
+The earlier Search Console screenshot was a live test saying the URL *can* be
+indexed. The Google Index tab's actual status and exclusion reason are still
+required to diagnose indexing. Search-result absence or a `site:` query alone
+cannot settle that question.
+
+Publish the current changed and new files before triggering a redeploy. If
+Netlify is connected to GitHub, commit and push the updated source to the linked
+branch; redeploying an older commit will not publish local uncommitted changes.
+After publication, `/invitations` must return 200 and the homepage source must
+contain WebSite structured data with `alternateName` including `Invatria`.
+Then inspect the homepage in Search Console, request indexing if appropriate,
+and recheck the Google Index tab rather than treating another live test as an
+indexing confirmation.
+
+Site-name guidance: https://developers.google.com/search/docs/appearance/site-names
+
+For the subsequent worldwide-English content expansion and current keyword/page
+map, see `SEARCH-GROWTH.md`. It adds the invitation ideas hub and four occasion
+pages, bringing the sitemap to 15 public URLs after deployment. The historical
+live checks below predate that expansion.
+
+Current production origin: `https://invitra-ai.netlify.app` (2026-10-27).
 The Netlify build configuration sets this origin explicitly. Local development
 continues to use localhost. After the owner's redeployment, all nine sitemap
 pages returned HTTP 200 with a canonical tag, one H1, and `index, follow`.
@@ -56,7 +100,7 @@ identifying its actual replacement.
 The owner's Search Console screenshot specifies HTML-file verification using
 `google317c274d2d702e08.html`. The matching verification file has been added under
 `public/`. Deploy it, open
-`https://invatria.netlify.app/google317c274d2d702e08.html` and confirm it displays
+`https://invitra-ai.netlify.app/google317c274d2d702e08.html` and confirm it displays
 `google-site-verification: google317c274d2d702e08.html`, then click Verify in
 Search Console's HTML file section. Keep this file in future deployments.
 The HTML-tag method below is an alternative and is not also required.
@@ -93,8 +137,8 @@ errors, and loads Marcellus from the local font assets without Google requests.
 3. After deploying, inspect `/robots.txt` and `/sitemap.xml`. Submit `sitemap.xml`
    in the verified property's Sitemaps screen, then inspect the homepage and
    templates page with URL Inspection. Submission is not completed by this code.
-   Use the URL-prefix property `https://invatria.netlify.app/`. The exact sitemap
-   address is `https://invatria.netlify.app/sitemap.xml`.
+   Use the URL-prefix property `https://invitra-ai.netlify.app/`. The exact sitemap
+   address is `https://invitra-ai.netlify.app/sitemap.xml`.
 4. Inspect the deployed host/CDN for password protection, bot challenges,
    `X-Robots-Tag`, and HTTP errors. Repository checks cannot verify hosting rules.
 5. Measure mobile LCP and CLS on the live domain with PageSpeed Insights and

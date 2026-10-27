@@ -17,6 +17,7 @@ const COLUMNS = [
     title: "Learn",
     links: [
       { href: "/about", label: "About Invitra" },
+      { href: "/invitations", label: "Invitation wording and ideas" },
       { href: "/#features", label: "Features" },
       { href: "/#how", label: "How it works" },
       { href: "/#faq", label: "Questions" },
@@ -36,8 +37,9 @@ export function SiteFooter() {
           <div className="max-w-sm">
             <Wordmark />
             <p className="mt-5 text-sm leading-relaxed text-charcoal-400">
-              Invitations worth opening. Design something elegant in minutes,
-              share it with everyone you know, and never see a paywall.
+              Invitra, also known as Invatria, is a free digital invitation
+              studio. Customize an invitation card, share a link and collect
+              replies online.
             </p>
             <p className="mt-6 inline-flex items-center gap-2 rounded-full border border-gold/25 bg-gold/6 px-4 py-2 font-label text-[0.625rem] uppercase tracking-[0.22em] text-gold-deep dark:text-gold-light">
               <span className="size-1.5 rounded-full bg-gold" />
@@ -94,7 +96,7 @@ export function SiteFooter() {
             {CATEGORIES.map((c) => (
               <li key={c.id}>
                 <Link
-                  href={`/templates?occasion=${c.id}`}
+                  href={["wedding", "birthday", "baby-shower", "nikah"].includes(c.id) ? `/invitations/${c.id}` : `/templates?occasion=${c.id}`}
                   className="text-[0.8125rem] text-charcoal-400 transition-colors duration-300 hover:text-gold-deep dark:hover:text-gold-light"
                 >
                   {c.label}

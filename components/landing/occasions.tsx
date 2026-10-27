@@ -17,6 +17,10 @@ export function Occasions() {
           lead="Every category comes pre-set with the right sections, wording and design — a nikah invitation asks different questions than a product launch."
         />
 
+        <p className="mx-auto mt-6 max-w-2xl text-center text-sm leading-relaxed">
+          Need help with the details? <Link href="/invitations" className="underline underline-offset-4">Explore invitation wording and planning checklists</Link> before you start.
+        </p>
+
         <ul className="mt-16 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {CATEGORIES.map((c, i) => (
             <li key={c.id}>
@@ -26,7 +30,8 @@ export function Occasions() {
                 className="h-full"
               >
                 <Link
-                  href={`/create?occasion=${c.id}&template=${c.suggested}`}
+                  href={["wedding", "birthday", "baby-shower", "nikah"].includes(c.id) ? `/invitations/${c.id}` : `/create?occasion=${c.id}&template=${c.suggested}`}
+                  prefetch={false}
                   className="group relative flex h-full flex-col overflow-hidden rounded-[1.25rem] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5 transition-all duration-500 ease-[var(--ease-luxe)] hover:-translate-y-1 hover:border-gold/35 hover:shadow-[var(--shadow-lifted)]"
                 >
                   {/* the tile's own colour, revealed on hover */}

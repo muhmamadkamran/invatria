@@ -1,6 +1,23 @@
 import type { Metadata } from "next";
 import { FAQ_ITEMS } from "@/lib/faq";
-export const metadata: Metadata = { alternates: { canonical: "/" } };
+import { SITE_IDENTITY_JSON_LD } from "@/lib/site-identity";
+export const metadata: Metadata = {
+  title: { absolute: "Invitra — Free Online Invitation Card Maker with RSVP" },
+  description: "Invitra, also known as Invatria, is a free online invitation card maker. Customize a design, share a link and collect RSVPs for weddings and birthdays.",
+  openGraph: {
+    title: "Free Online Invitation Card Maker with RSVP · Invitra",
+    description: "Customize a free digital invitation card, share a link and collect guest RSVPs online.",
+    url: "/",
+    siteName: "Invitra",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Free Online Invitation Card Maker with RSVP · Invitra",
+    description: "Customize a free digital invitation card, share a link and collect guest RSVPs online.",
+  },
+  alternates: { canonical: "/" },
+};
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AdSlot } from "@/components/ads";
@@ -21,7 +38,7 @@ const jsonLd = {
   applicationCategory: "DesignApplication",
   operatingSystem: "Any",
   description:
-    "Create beautiful digital invitations for weddings, birthdays, engagements, baby showers, Eid, graduation and corporate events. Unlimited invitations and guests, completely free.",
+    "Create free digital invitation cards for weddings, birthdays and other events, with shareable links and online RSVP.",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   featureList: [
     "Unlimited invitations",
@@ -44,7 +61,7 @@ export default function Home() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ_ITEMS.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }]).replace(/</g, "\u003c") }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([...SITE_IDENTITY_JSON_LD, jsonLd, { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ_ITEMS.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }]).replace(/</g, "\u003c") }}
       />
       <SiteHeader />
       <main id="main">

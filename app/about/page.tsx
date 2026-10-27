@@ -20,7 +20,7 @@ export default function AboutPage() {
         <article className="mx-auto max-w-3xl px-5 py-16 sm:py-24">
           <p className="eyebrow">Publisher profile</p>
           <h1 className="mt-4 text-display font-light">About Invitra</h1>
-          <p className="mt-8 leading-relaxed">Invitra is a digital invitation studio for weddings, birthdays, engagements and other events. You can preview six designs, customize your event details, and publish an invitation with a shareable link.</p>
+          <p className="mt-8 leading-relaxed">Invitra, also known as Invatria at {new URL(SITE_URL).hostname}, is a digital invitation studio for weddings, birthdays, engagements and other events. You can preview six designs, customize your event details, and publish an invitation with a shareable link.</p>
           <h2 className="mt-12 text-title">What you can create</h2>
           <p className="mt-5 leading-relaxed">Invitations can include an event schedule, venue information, a photo gallery, music and a countdown. Guests can open a published invitation in their browser, RSVP and leave a guest-book message without creating an account.</p>
           <h2 className="mt-12 text-title">Saving and managing invitations</h2>
@@ -37,7 +37,7 @@ export default function AboutPage() {
       <SiteFooter />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         "@context": "https://schema.org", "@type": "AboutPage", name: "About Invitra", url: `${SITE_URL}/about`,
-        mainEntity: { "@type": "Organization", "@id": `${SITE_URL}/#organization`, name: "Invitra", url: SITE_URL,
+        mainEntity: { "@type": "Organization", "@id": `${SITE_URL}/#organization`, name: "Invitra", alternateName: "Invatria", url: SITE_URL,
           description: "A digital invitation studio with customizable templates, online RSVPs and a guest book." },
       }).replace(/</g, "\\u003c") }} />
     </>

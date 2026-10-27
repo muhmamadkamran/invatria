@@ -125,10 +125,10 @@ export function Hero() {
           id="hero-heading"
           className="mt-7 text-hero font-light text-[var(--color-heading)]"
         >
-          Create Beautiful
+          Create Free
           <br />
           <span className="italic">
-            <span className="text-gilt">Digital Invitations</span>
+            <span className="text-gilt">Invitation Cards</span>
           </span>
           <br />
           in Minutes
@@ -138,9 +138,9 @@ export function Hero() {
           {...entrance(0.85)}
           className="mx-auto mt-7 max-w-2xl text-pretty text-base leading-relaxed text-charcoal-600 sm:text-[1.0625rem] dark:text-charcoal-200"
         >
-          Design, customize and share elegant invitations for weddings,
-          birthdays, engagements, baby showers, Eid, graduation, corporate
-          events and more.
+          Make a free digital invitation card for your wedding, birthday, baby shower
+          or another event. Share a link and collect RSVPs online. Guests can
+          reply without an account.
         </motion.p>
 
         <motion.div

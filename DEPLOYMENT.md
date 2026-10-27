@@ -1,5 +1,9 @@
 # Deploying Invitra
 
+The current production URL is `https://invitra-ai.netlify.app`. For the move from
+`invatria.netlify.app`, follow [migration/README.md](migration/README.md), including
+the new Search Console property and Supabase Auth/guest-function origin updates.
+
 Invitra uses a hosted Next.js website and Supabase for Auth, Postgres, Storage
 and guest-response Edge Functions. All saved invitation and guest data belongs
 in Supabase. The app does not fall back to browser storage when configuration
