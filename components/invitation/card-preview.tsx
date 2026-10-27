@@ -1,5 +1,7 @@
 "use client";
 
+import { OptimizedPhoto } from "@/components/optimized-photo";
+
 import { useEffect, useState } from "react";
 import type { Invitation } from "@/lib/types";
 import { getTemplate, themeVars, type TemplateDef } from "@/lib/templates";
@@ -26,7 +28,7 @@ export function CardPreview({
   const { theme } = template;
   const d = formatDateParts(invitation.date);
   const occasion = getOccasion(invitation.category);
-  const [cover, setCover] = useState("");
+  const [cover, setCover] = useState(invitation.cover?.url ?? "");
 
   useEffect(() => {
     let alive = true;
@@ -77,9 +79,9 @@ export function CardPreview({
       {showPhoto ? (
         <div className="relative mx-auto mt-[10%] h-[30%] w-[62%] shrink-0 overflow-hidden rounded-full">
           {cover ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <OptimizedPhoto
               src={cover}
+                sizes="(max-width: 768px) 100vw, 800px"
               alt=""
               className="size-full object-cover"
               style={{ objectPosition: `${invitation.coverFocus.x}% ${invitation.coverFocus.y}%` }}

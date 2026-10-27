@@ -1,3 +1,5 @@
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { absoluteUrl } from "@/lib/site";
 import type { Metadata } from "next";
 import { demoInvitation } from "@/lib/defaults";
 import { InvitationView } from "@/components/invitation/view";
@@ -6,6 +8,7 @@ import { TEMPLATE_MAP } from "@/lib/templates";
 
 export const metadata: Metadata = {
   title: "A finished invitation",
+  alternates: { canonical: "/demo" },
   description:
     "See a complete Invitra invitation — envelope reveal, countdown, schedule, gallery, RSVP and guest book, exactly as your guests would.",
 };
@@ -15,9 +18,10 @@ export default function DemoPage() {
     <>
       <PreviewBar template={TEMPLATE_MAP["royal-gold"]} />
       <main id="main">
+        <Breadcrumbs items={[{ name: "Demo invitation", path: "/demo" }]} />
         <InvitationView
           invitation={demoInvitation("royal-gold")}
-          publicUrl="https://invitra.app/demo"
+          publicUrl={absoluteUrl("/demo")}
         />
       </main>
     </>

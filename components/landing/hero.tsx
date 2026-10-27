@@ -14,7 +14,6 @@ import { ArrowRight, LayoutGrid, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoldDust } from "@/components/fx";
 import { CardPreview } from "@/components/invitation/card-preview";
-import { RevealWords } from "@/components/reveal";
 import { TEMPLATES } from "@/lib/templates";
 import { demoInvitation } from "@/lib/defaults";
 import { clamp } from "@/lib/utils";
@@ -125,13 +124,13 @@ export function Hero() {
           id="hero-heading"
           className="mt-7 text-hero font-light text-[var(--color-heading)]"
         >
-          <RevealWords text="Create Beautiful" delay={0.25} />
+          Create Beautiful
           <br />
           <span className="italic">
-            <RevealWords text="Digital Invitations" delay={0.4} wordClassName="text-gilt animate-sheen" />
+            <span className="text-gilt">Digital Invitations</span>
           </span>
           <br />
-          <RevealWords text="in Minutes" delay={0.62} />
+          in Minutes
         </h1>
 
         <motion.p

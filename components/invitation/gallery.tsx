@@ -1,5 +1,7 @@
 "use client";
 
+import { OptimizedPhoto } from "@/components/optimized-photo";
+
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { InvReveal } from "./parts";
@@ -10,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 /** Resolves a list of MediaRefs to displayable URLs once, on mount. */
 export function useMediaUrls(refs: MediaRef[]) {
-  const [urls, setUrls] = useState<string[]>([]);
+  const [urls, setUrls] = useState<string[]>(() => refs.map((ref) => ref.url ?? ""));
   useEffect(() => {
     let alive = true;
     Promise.all(refs.map((r) => mediaUrl(r))).then((u) => alive && setUrls(u));
@@ -76,11 +78,10 @@ export function Gallery({ images }: { images: MediaRef[] }) {
                 aria-label={img.caption || `Open photo ${i + 1}`}
               >
                 {urls[i] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <OptimizedPhoto
                     src={urls[i]}
-                    alt={img.caption || ""}
-                    loading="lazy"
+                    alt={img.caption || `Invitation gallery photo ${i + 1}`}
+                    sizes="(max-width: 640px) 50vw, 400px"
                     className="size-full object-cover transition-transform duration-[900ms] ease-[var(--ease-luxe)] group-hover:scale-[1.06]"
                   />
                 ) : (
@@ -118,7 +119,7 @@ export function Gallery({ images }: { images: MediaRef[] }) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               src={urls[open]}
-              alt={images[open].caption || ""}
+              alt={images[open].caption || `Invitation gallery photo ${open + 1}`}
               className="max-h-[86vh] max-w-full rounded-lg object-contain"
               onClick={(e) => e.stopPropagation()}
             />

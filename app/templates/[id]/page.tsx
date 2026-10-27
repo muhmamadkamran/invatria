@@ -1,3 +1,5 @@
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { absoluteUrl } from "@/lib/site";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TEMPLATES, TEMPLATE_MAP } from "@/lib/templates";
@@ -5,6 +7,8 @@ import type { TemplateId } from "@/lib/types";
 import { demoInvitation } from "@/lib/defaults";
 import { InvitationView } from "@/components/invitation/view";
 import { PreviewBar } from "@/components/templates/preview-bar";
+
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return TEMPLATES.map((t) => ({ id: t.id }));
@@ -21,6 +25,7 @@ export async function generateMetadata({
   return {
     title: `${template.name} — ${template.tagline}`,
     description: template.description,
+    alternates: { canonical: `/templates/${template.id}` },
     openGraph: { title: `${template.name} · Invitra`, description: template.description },
   };
 }
@@ -42,7 +47,8 @@ export default async function TemplatePreviewPage({
     <>
       <PreviewBar template={template} />
       <main id="main">
-        <InvitationView invitation={invitation} publicUrl={`https://invitra.app/templates/${template.id}`} />
+        <Breadcrumbs items={[{ name: "Templates", path: "/templates" }, { name: template.name, path: `/templates/${template.id}` }]} />
+        <InvitationView invitation={invitation} publicUrl={absoluteUrl(`/templates/${template.id}`)} />
       </main>
     </>
   );

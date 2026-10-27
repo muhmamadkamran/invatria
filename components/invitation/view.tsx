@@ -1,5 +1,7 @@
 "use client";
 
+import { OptimizedPhoto } from "@/components/optimized-photo";
+
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import {
@@ -55,7 +57,7 @@ export function InvitationView({
 
   const useEnvelope = invitation.options.envelope && !preview;
   const [opened, setOpened] = useState(!useEnvelope);
-  const [cover, setCover] = useState("");
+  const [cover, setCover] = useState(invitation.cover?.url ?? "");
 
   function markOpened() {
     setOpened(true);
@@ -155,9 +157,10 @@ export function InvitationView({
               style={{ y: reduce ? 0 : coverY }}
               className="absolute inset-0 -z-10 scale-110"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <OptimizedPhoto
                 src={cover}
+                sizes="100vw"
+                priority
                 alt=""
                 className="size-full object-cover"
                 style={{

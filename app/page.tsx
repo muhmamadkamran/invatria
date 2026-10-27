@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { FAQ_ITEMS } from "@/lib/faq";
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AdSlot } from "@/components/ads";
@@ -41,7 +44,7 @@ export default function Home() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ_ITEMS.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }]).replace(/</g, "\u003c") }}
       />
       <SiteHeader />
       <main id="main">

@@ -1,7 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Container, Section, SectionHeading } from "@/components/landing/section";
 import { TemplateCard } from "@/components/landing/templates-showcase";
@@ -11,11 +10,11 @@ import type { CategoryId } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 function Browser() {
-  const params = useSearchParams();
-  const initial = params.get("occasion") as CategoryId | null;
-  const [occasion, setOccasion] = useState<CategoryId | "all">(
-    initial && CATEGORIES.some((c) => c.id === initial) ? initial : "all",
-  );
+  const [occasion, setOccasion] = useState<CategoryId | "all">("all");
+  useEffect(() => {
+    const initial = new URLSearchParams(window.location.search).get("occasion");
+    if (initial && CATEGORIES.some((c) => c.id === initial)) setOccasion(initial as CategoryId);
+  }, []);
 
   const shown = useMemo(
     () =>
@@ -106,10 +105,4 @@ function Browser() {
   );
 }
 
-export function TemplateBrowser() {
-  return (
-    <Suspense fallback={<div className="min-h-[60vh]" />}>
-      <Browser />
-    </Suspense>
-  );
-}
+export function TemplateBrowser() { return <Browser />; }

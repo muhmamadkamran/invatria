@@ -22,6 +22,7 @@ const FONT_HREF =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
   title: {
     default: "Invitra — Create Beautiful Digital Invitations in Minutes",
     template: "%s · Invitra",

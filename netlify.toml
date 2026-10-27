@@ -4,6 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "24"
+  NEXT_PUBLIC_SITE_URL = "https://invatria.netlify.app"
   # Netlify's Next.js runtime handles SSR, ISR and the image CDN.
   NEXT_TELEMETRY_DISABLED = "1"
 
