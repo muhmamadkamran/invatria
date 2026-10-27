@@ -5,6 +5,7 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import { AuthUIProvider } from "@/components/auth/auth-ui";
 import { Toaster } from "sonner";
 import { SITE_URL } from "@/lib/site";
+import { DeferredFonts } from "@/components/deferred-fonts";
 import "./globals.css";
 
 /* The type family, loaded from the CDN in one request. Families are declared
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     template: "%s · Invitra",
   },
   description:
-    "Design, customize and share elegant invitations for weddings, birthdays, engagements, baby showers, Eid, graduation, corporate events and more. Unlimited invitations, unlimited guests, completely free.",
+    "Create free digital invitations for weddings, birthdays and more. Customize a template, share your invitation link and collect guest RSVPs online.",
   keywords: [
     "digital invitation",
     "wedding invitation",
@@ -40,7 +41,8 @@ export const metadata: Metadata = {
     "RSVP",
     "free invitation maker",
   ],
-  authors: [{ name: "Invitra" }],
+  authors: [{ name: "Invitra", url: `${SITE_URL}/about` }],
+  publisher: "Invitra",
   openGraph: {
     type: "website",
     url: SITE_URL,
@@ -79,7 +81,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="stylesheet" href={FONT_HREF} />
+        <DeferredFonts href={FONT_HREF} />
       </head>
       <body className="antialiased">
         <ThemeProvider>

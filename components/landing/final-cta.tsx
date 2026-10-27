@@ -37,7 +37,7 @@ export function FinalCta() {
         <Reveal delay={0.2}>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg" className="group w-full sm:w-auto">
-              <Link href="/create">
+              <Link prefetch={false} href="/create">
                 Create Invitation
                 <ArrowRight className="transition-transform duration-300 group-hover:translate-x-1" />
               </Link>

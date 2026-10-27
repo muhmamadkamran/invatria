@@ -1,7 +1,7 @@
 export const FAQ_ITEMS = [
   {
-    q: "Is it genuinely free, or free until I try to send it?",
-    a: "Genuinely free. There is no plan, no trial, no watermark and no guest limit anywhere in the product. The invitation you publish is the finished thing. Advertising on the studio pages pays for it.",
+    q: "Is Invitra free to use?",
+    a: "The templates, invitation editor and guest-response tools are free to use. You need a free account to save and publish an invitation. Advertising appears on the studio pages.",
   },
   {
     q: "Do I need an account?",
@@ -28,7 +28,7 @@ export const FAQ_ITEMS = [
     a: "Download it as a high-resolution image or a print-ready PDF, and add the QR code so the printed card still opens the live page with the countdown and RSVP on it.",
   },
   {
-    q: "What happens to the invitation after the event?",
-    a: "It stays exactly where it is, with the guest book messages attached, for as long as you keep it. Nothing expires and nothing is deleted on a schedule.",
+    q: "How do I manage an invitation after the event?",
+    a: "Open My invitations to review your invitation, RSVPs and guest-book messages. You can delete an invitation from your account when you no longer need it.",
   },
 ];

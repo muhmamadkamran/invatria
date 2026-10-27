@@ -98,7 +98,7 @@ export function HowItWorks() {
 
         <Reveal delay={0.1} className="mt-16 text-center">
           <Button asChild size="lg" className="group">
-            <Link href="/create">
+            <Link prefetch={false} href="/create">
               Start at step one
               <ArrowRight className="transition-transform duration-300 group-hover:translate-x-1" />
             </Link>

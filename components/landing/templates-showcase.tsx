@@ -120,7 +120,7 @@ export function TemplateCard({
 
           <div className="mt-6 flex gap-2">
             <Button asChild size="sm" className="flex-1">
-              <Link href={`/create?template=${template.id}&occasion=${occasion}`}>
+              <Link prefetch={false} href={`/create?template=${template.id}&occasion=${occasion}`}>
                 Use this design
               </Link>
             </Button>

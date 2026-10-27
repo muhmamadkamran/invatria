@@ -16,6 +16,7 @@ const COLUMNS = [
   {
     title: "Learn",
     links: [
+      { href: "/about", label: "About Invitra" },
       { href: "/#features", label: "Features" },
       { href: "/#how", label: "How it works" },
       { href: "/#faq", label: "Questions" },
@@ -54,6 +55,7 @@ export function SiteFooter() {
                   <li key={l.href + l.label}>
                     <Link
                       href={l.href}
+                      prefetch={l.href === "/create" || l.href === "/my-invitations" ? false : undefined}
                       className="text-sm text-charcoal-600 transition-colors duration-300 hover:text-gold-deep dark:text-charcoal-200 dark:hover:text-gold-light"
                     >
                       {l.label}

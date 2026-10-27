@@ -46,7 +46,7 @@ export function SiteHeader() {
   return (
     <>
       <motion.header
-        initial={reduce ? false : { y: -80, opacity: 0 }}
+        initial={false}
         animate={{ y: 0, opacity: 1 }}
         transition={
           reduce ? { duration: 0 } : { duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }
@@ -71,6 +71,7 @@ export function SiteHeader() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={item.href === "/my-invitations" ? false : undefined}
                   className={cn(
                     "group relative rounded-full px-4 py-2 font-label text-[0.7rem] uppercase tracking-[0.16em] transition-colors duration-300",
                     active
@@ -89,7 +90,7 @@ export function SiteHeader() {
             <AccountButton className="hidden lg:inline-flex" />
             <ThemeToggle className="hidden sm:grid" />
             <Button asChild size="sm" className="hidden sm:inline-flex">
-              <Link href="/create">
+              <Link prefetch={false} href="/create">
                 Create Invitation
                 <ArrowRight className="transition-transform duration-300 group-hover:translate-x-0.5" />
               </Link>
@@ -149,6 +150,7 @@ export function SiteHeader() {
                   >
                     <Link
                       href={item.href}
+                  prefetch={item.href === "/my-invitations" ? false : undefined}
                       className="block border-b border-[var(--color-line)] py-5 font-display text-3xl font-light text-[var(--color-heading)]"
                     >
                       {item.label}
@@ -161,7 +163,7 @@ export function SiteHeader() {
                 <AccountButton className="w-full justify-center" />
                 <div className="flex items-center gap-3">
                   <Button asChild size="lg" className="flex-1">
-                    <Link href="/create">Create Invitation</Link>
+                    <Link prefetch={false} href="/create">Create Invitation</Link>
                   </Button>
                   <ThemeToggle />
                 </div>

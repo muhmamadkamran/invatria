@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Free Digital Invitation Templates",
   alternates: { canonical: "/templates" },
   description:
-    "Six premium invitation designs — Royal Gold, Romantic Blush, Moonlight Garden, Floral Paradise, Modern Luxury and Royal Mughal. Every one is free, with every feature unlocked.",
+    "Browse six free digital invitation templates for weddings, birthdays and other events. Preview a design, customize your details and share it online.",
 };
 
 export default function TemplatesPage() {
