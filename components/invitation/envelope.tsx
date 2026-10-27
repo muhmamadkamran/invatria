@@ -1,7 +1,9 @@
 "use client";
 
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import type { TemplateDef } from "@/lib/templates";
 import { themeVars } from "@/lib/templates";
 import type { Invitation } from "@/lib/types";

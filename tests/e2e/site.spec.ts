@@ -6,11 +6,11 @@ import { login } from '../support/fixtures';
 test('landing page, FAQ and theme preference', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  const faq = page.getByRole('button', { name: 'Do I need an account?', exact: true });
-  await faq.click();
-  await expect(faq).toHaveAttribute('aria-expanded', 'true');
-  await faq.click();
-  await expect(faq).toHaveAttribute('aria-expanded', 'false');
+  const faq = page.locator('details').filter({ has: page.locator('summary', { hasText: 'Do I need an account?' }) });
+  await faq.locator('summary').click();
+  await expect(faq).toHaveAttribute('open', '');
+  await faq.locator('summary').click();
+  await expect(faq).not.toHaveAttribute('open');
   const mobileMenu = (page.viewportSize()?.width ?? 1440) < 640;
   if (mobileMenu) await page.getByRole('button', { name: 'Open menu', exact: true }).click();
   await page.getByRole('button', { name: 'Switch to dark mode' }).filter({ visible: true }).click();

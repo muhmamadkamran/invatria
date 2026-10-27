@@ -1,6 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+
+import { motion } from "framer-motion";
 import type { TemplateDef } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 import { Ornament } from "./pattern";

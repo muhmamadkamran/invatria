@@ -1,5 +1,7 @@
 "use client";
 
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+
 import Link from "next/link";
 import { useRef } from "react";
 import {
@@ -8,8 +10,7 @@ import {
   useTransform,
   useSpring,
   useMotionValue,
-  useReducedMotion,
-} from "framer-motion";
+  } from "framer-motion";
 import { ArrowRight, LayoutGrid, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoldDust } from "@/components/fx";

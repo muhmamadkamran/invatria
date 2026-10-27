@@ -8,18 +8,8 @@ import { SITE_URL } from "@/lib/site";
 import { DeferredFonts } from "@/components/deferred-fonts";
 import "./globals.css";
 
-/* The type family, loaded from the CDN in one request. Families are declared
-   in globals.css so components only ever reference the semantic token. */
-const FONT_HREF =
-  "https://fonts.googleapis.com/css2?family=Amiri:wght@400;700" +
-  "&family=Cinzel:wght@400;500;600" +
-  "&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600" +
-  "&family=Great+Vibes" +
-  "&family=Inter:wght@300;400;500;600;700" +
-  "&family=Jost:wght@300;400;500" +
-  "&family=Marcellus&display=swap";
-
-
+// Self-hosted font families retain their licenses under public/fonts.
+const FONT_HREF = "/fonts/invitra.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -79,8 +69,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <DeferredFonts href={FONT_HREF} />
       </head>
       <body className="antialiased">

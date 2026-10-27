@@ -61,6 +61,29 @@ The owner's Search Console screenshot specifies HTML-file verification using
 Search Console's HTML file section. Keep this file in future deployments.
 The HTML-tag method below is an alternative and is not also required.
 
+## Google live-test rendering repair
+
+The owner reported React error 418 and a failed external Marcellus font request.
+Development-mode reproduction confirmed a hydration mismatch when the browser
+prefers reduced motion: the server emitted animated word spans and nonbreaking
+spaces, while the first browser render emitted a plain-text heading. All motion
+preference consumers now use a shared `useSyncExternalStore` hook with a stable
+server snapshot. The initial client render matches the server, then subscribes
+to the actual browser preference, including changes while the page is open.
+
+The seven existing font families are now self-hosted under `public/fonts`, with
+their OFL license files. `/fonts/invitra.css` references only local WOFF2 URLs;
+the layout no longer contacts Google Fonts or fonts.gstatic.com. The stylesheet
+continues loading after hydration with the existing no-JavaScript fallback.
+Run `node scripts/vendor-fonts.mjs` only when intentionally refreshing the font
+assets; regular builds do not need access to Google's font servers.
+
+These repairs require deployment before repeating Google's live URL test.
+Validation passed: production build, TypeScript, ESLint and two production
+browser regression tests. Each browser test visits home, templates, demo and
+about with either reduced or normal motion, checks for JavaScript/hydration
+errors, and loads Marcellus from the local font assets without Google requests.
+
 1. Set `NEXT_PUBLIC_SITE_URL` on the production host to the real HTTPS origin.
    The local `.env.local` currently uses `http://localhost:3000`; this is correct
    only for local development. Canonicals and sitemap entries depend on this value.

@@ -1,5 +1,7 @@
 "use client";
 
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,8 +10,7 @@ import {
   motion,
   useScroll,
   useMotionValueEvent,
-  useReducedMotion,
-} from "framer-motion";
+  } from "framer-motion";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { Wordmark } from "./brand";
 import { ThemeToggle } from "./theme-toggle";
