@@ -48,21 +48,56 @@ processed sitemap with 15 discovered URLs, an earlier homepage status of
 historical screenshots, not confirmation of today's indexing status. Sitemap
 discovery does not establish that the 15 URLs are indexed.
 
-## Live pages versus current source work
+## Verified deployment
+
+Implementation commit **`403ee77e2255492974535963a1b230490eb2ba8a`** was pushed
+to GitHub `main` and verified on the live Netlify origin. The latest saved
+[deployed audit](baselines/2026-10-28-deployed-audit.json) began at
+`2026-10-28T05:34:55.164Z` and checked **16 public pages, zero errors and zero
+warnings**. All sitemap pages returned 200 with matching canonicals, one H1,
+descriptions, indexing allowed, social images and incoming public links.
+`/llms.txt` returned 200. Homepage and catalog browser checks recorded no
+JavaScript errors, missing alt attributes or horizontal overflow.
+
+Three post-deployment lab observations returned the following results. These
+are a small sample with variable network/hosting conditions, not field metrics
+or a guaranteed load time:
+
+| Observation | Home LCP / TTFB | Catalog LCP / TTFB |
+| --- | --- | --- |
+| First post-deploy audit | 4.452 s / 3.011 s | 0.948 s / 0.589 s |
+| Timing breakdown audit | 2.288 s / 1.127 s | 0.800 s / 0.437 s |
+| Saved deployed audit | 2.480 s / 0.966 s | 2.448 s / 1.288 s |
+
+The two-second target remains **unmet** for the homepage in these observations.
+The third run identified the homepage H1 as LCP; its web-font requests began
+after that paint. Font preload alone is therefore not supported as a cure for
+that observation. Document request wait was about 752 ms, connection about
+200 ms, and download about 315 ms. Response headers showed Next.js and Netlify
+Durable cache hits with edge revalidation. The audit now records stylesheet
+timing to support the next investigation of render delay.
+
+No speculative global cache override or experimental CSS configuration was
+enabled. Next's [inlineCss documentation](https://nextjs.org/docs/app/api-reference/config/next-config-js/inlineCss)
+describes a potential first-visit trade-off but marks it experimental and not
+recommended for production. The current compiled stylesheet is approximately
+83 KB raw / 15.5 KB gzip; evidence from the main stylesheet waterfall and
+repeat-visitor navigation is needed before choosing a different delivery policy.
+
+## Implemented source work
 
 The audit confirms that the homepage, catalog, demo, About page, occasion hub,
 four occasion guides and six template pages existed in the deployed version.
-The following current workspace changes must be built, tested, deployed and
-checked on the live origin before being reported as published:
+The following implementation is included in the verified deployment above:
 
 | Source work | Implementation and verification required |
 | --- | --- |
 | Server-rendered text visibility | Hero, shared reveal effects and invitation sections no longer rely on invisible text or blur gates. Production visibility tests inspect headings, design cards and actions without JavaScript. Recheck hydration under both motion preferences before deployment. |
 | Shared social image | `public/images/invitra-share.png` and `.svg` are original product illustrations. Shared metadata supplies the image and page-specific Open Graph URL. Check image HTTP 200, absolute production URLs and tags after deployment. |
 | Clear product identity | Shared visible facts, WebApplication schema and connected website/organization entities describe real pricing, host accounts, guest access and features. No personal author credentials have been invented. |
-| AI search readability | Explicit public rules for search crawlers and an optional `/llms.txt` summary are implemented in source. They require deployment; the baseline version still returned 404 for the summary. No independent AI recommendation has been demonstrated. |
+| AI search readability | Explicit public rules for search crawlers and the optional `/llms.txt` summary are live. The old baseline returned 404; the deployed summary returned 200. No independent AI recommendation has been demonstrated. |
 | WhatsApp wording tool | New route `/tools/whatsapp-invitation-message`, with a free browser-based message builder, occasion-specific wording, optional HTTPS invitation link, copy action and user-controlled WhatsApp opening. It is linked from the footer and occasion hub. |
-| Sitemap | Source adds the wording tool, increasing expected public entries from 15 to 16 after deployment. Confirm the deployed file rather than assuming Search Console has discovered the new route. |
+| Sitemap | The deployed sitemap lists 16 public URLs including the wording tool. Search Console's new discovery/indexing count still needs authenticated data. |
 
 The wording tool does not need an account to prepare text. It is a template-based
 local composer, not a verified AI text-generation feature. Hosts still need a
@@ -72,8 +107,8 @@ automatic sends or report delivery/read receipts.
 
 Production checks and live checks have different purposes. Local tests can
 validate implementation; they cannot confirm indexing, rankings or deployed
-behavior. Record the final passing checks and deployed commit when those steps
-actually occur. No production deployment is recorded in this status document.
+behavior. The deployment above confirms the observed live implementation;
+it does not establish current Google indexing or search rankings.
 
 ### Completed implementation checks
 
@@ -120,7 +155,7 @@ every wording variation.
 | Birthday invitations and wording | `/invitations/birthday` | Live page observed. |
 | Baby shower invitations and wording | `/invitations/baby-shower` | Live page observed. |
 | Nikah invitations and English wording | `/invitations/nikah` | Live page observed. |
-| WhatsApp invitation message and RSVP-link wording | `/tools/whatsapp-invitation-message` | Source implemented; pending production validation and deployment. Existing keyword bank is not represented as verified demand for this tool. |
+| WhatsApp invitation message and RSVP-link wording | `/tools/whatsapp-invitation-message` | Deployed and HTTP-verified; message/copy/share production tests passed. Existing keyword bank is not represented as verified demand for this tool. |
 
 Use real query data to choose the next improvements. More keywords alone do not
 establish relevance, indexing or visitor engagement. Current coverage and

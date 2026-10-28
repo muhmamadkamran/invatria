@@ -4,10 +4,9 @@ Audience: worldwide English searches, as requested by the owner.
 
 Latest implementation and measurement state:
 [campaign status](seo/campaign-status.md), [promotion drafts](seo/promotion-kit.md)
-and [opportunity spreadsheet](seo/promotion-opportunities.csv). The tested source
-adds `/tools/whatsapp-invitation-message`, bringing the sitemap to 16 public URLs.
-The last saved live audit still contains 15; deployment and live verification
-are required before reporting the new tool as published.
+and [opportunity spreadsheet](seo/promotion-opportunities.csv). Commit `403ee77`
+is deployed and adds `/tools/whatsapp-invitation-message`, bringing the verified
+live sitemap to 16 public URLs. The 15-page audit below predates that deployment.
 
 Current production URL: `https://invitra-ai.netlify.app`. The Netlify hostname
 was renamed; migrate canonical URLs, sitemap submission, Search Console property
@@ -88,7 +87,8 @@ into these pages. Their canonical URLs are included in the generated sitemap.
 
 Deploy the new pages, then inspect `/invitations` and the four occasion URLs in
 Search Console. The submitted sitemap updates automatically after deployment;
-it should now list 15 public pages. Request indexing of the new URLs if needed.
+the current verified deployment lists 16 public pages, including the WhatsApp
+tool. Request indexing of the new URLs if appropriate and available.
 Keep private invitations and account pages excluded from search.
 
 In Search Console, compare consistent date ranges once sufficient data exists:
@@ -125,9 +125,10 @@ pages for every keyword variation.
 
 ## Validation
 
-The production build and four targeted production tests passed: indexable HTML,
-canonicals, sitemap entries, FAQ/breadcrumb JSON-LD, unknown-occasion 404,
-clipboard copying, occasion-specific creation links, and hydration under normal
-and reduced-motion settings. ESLint passed for the changed files. These checks
-verify the implementation; the new content has not yet been deployed or measured
-for search impressions, clicks or rankings.
+The production build, TypeScript, focused ESLint and 20 distinct production
+tests passed. Coverage includes indexable HTML, canonicals, sitemap entries,
+FAQ/breadcrumb JSON-LD, unknown-occasion 404, clipboard copying, creation links,
+the WhatsApp tool, social metadata and hydration under both motion settings,
+including Netlify's head transformation. Commit `403ee77` is live; the deployed
+audit checked 16 public pages with zero errors or warnings. Search impressions,
+clicks, index status and rankings still require current Search Console data.

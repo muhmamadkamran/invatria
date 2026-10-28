@@ -41,14 +41,14 @@ Source: [About Invitra](https://invitra-ai.netlify.app/about) and the correspond
 `app/about/page.tsx` and `lib/product-facts.ts` source. This is a publisher profile,
 not a personal biography or a claim of professional credentials.
 
-**Pending-deployment addition:** The source also includes a free local wording
-tool at `/tools/whatsapp-invitation-message`. It prepares wedding, birthday,
+**Live addition, verified October 28:** A free local wording
+tool is available at `/tools/whatsapp-invitation-message`. It prepares wedding, birthday,
 baby shower and nikah messages in the browser without an account, accepts an
 optional published HTTPS invitation link, and lets the user copy text or open
 WhatsApp to choose recipients. Saving/publishing an actual RSVP invitation still
 requires a free host account. It does not automatically send messages or track
-delivery. Do not add this tool to live-product pitches or submit its URL until
-the deployed route and behavior have been checked. It is not an AI generator.
+delivery. The route passed the live HTTP audit and its copy/share behavior
+passed production browser tests. It is a template-based wording tool.
 
 ## Five priority opportunities
 

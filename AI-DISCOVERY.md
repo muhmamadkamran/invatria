@@ -57,7 +57,10 @@ social previews and the message tool. Hydration checks cover both motion
 preferences and the exact Netlify head insertion that reproduced live error
 #418. The font fallback was moved to the body to avoid that mismatch. These
 are implementation checks, not evidence of external indexing or independent
-AI recommendations. Changes remain local until deployed.
+AI recommendations. Commit `403ee77` was deployed and verified on October 28:
+16 public URLs passed the HTTP audit, the optional summary returned 200, and
+homepage/catalog browser checks reported no JavaScript errors. See the
+[deployed audit](seo/baselines/2026-10-28-deployed-audit.json).
 
 - [OpenAI crawler documentation](https://developers.openai.com/api/docs/bots):
   OAI-SearchBot is for ChatGPT search; GPTBot's training role is separate.

@@ -21,7 +21,13 @@ async function get(url, headers) {
   const start = performance.now();
   try {
     const response = await fetch(url, { headers, signal: AbortSignal.timeout(20000) });
-    return { status: response.status, finalUrl: response.url, responseMs: Math.round(performance.now() - start), contentType: response.headers.get("content-type"), robotsHeader: response.headers.get("x-robots-tag"), body: await response.text() };
+    return {
+      status: response.status, finalUrl: response.url, responseMs: Math.round(performance.now() - start),
+      contentType: response.headers.get("content-type"), robotsHeader: response.headers.get("x-robots-tag"),
+      cacheControl: response.headers.get("cache-control"), cacheStatus: response.headers.get("cache-status"),
+      age: response.headers.get("age"), serverTiming: response.headers.get("server-timing"),
+      body: await response.text(),
+    };
   } catch (error) { return { status: null, responseMs: Math.round(performance.now() - start), error: error.message, body: "" }; }
 }
 const [robots, sitemap, summary] = await Promise.all(["/robots.txt", "/sitemap.xml", "/llms.txt"].map(route => get(origin + route)));
@@ -50,6 +56,7 @@ for (let index = 0; index < publicUrls.length; index += 4) {
     });
     const page = {
       url, status: response.status, responseMs: response.responseMs,
+      cacheControl: response.cacheControl, cacheStatus: response.cacheStatus, age: response.age,
       title: decode(html.match(/<title>(.*?)<\/title>/s)?.[1] ?? ""),
       description: meta(html, "description"), canonical: canonical(html),
       robots: meta(html, "robots"), robotsHeader: response.robotsHeader,
@@ -93,20 +100,47 @@ if (args.includes("--browser")) {
     page.on("pageerror", error => errors.push(error.message));
     await page.addInitScript(() => {
       window.__seoAudit = { lcpMs: 0, cls: 0 };
-      new PerformanceObserver(list => { for (const entry of list.getEntries()) window.__seoAudit.lcpMs = entry.startTime; }).observe({ type: "largest-contentful-paint", buffered: true });
+      new PerformanceObserver(list => {
+        for (const entry of list.getEntries()) {
+          window.__seoAudit.lcpMs = entry.startTime;
+          window.__seoAudit.lcpElement = entry.element?.tagName + (entry.element?.id ? `#${entry.element.id}` : "");
+        }
+      }).observe({ type: "largest-contentful-paint", buffered: true });
       new PerformanceObserver(list => { for (const entry of list.getEntries()) if (!entry.hadRecentInput) window.__seoAudit.cls += entry.value; }).observe({ type: "layout-shift", buffered: true });
     });
     try {
       await page.goto(origin + pathname, { waitUntil: "load", timeout: 30000 });
       await page.waitForTimeout(1500);
-      const metrics = await page.evaluate(() => ({
-        ...window.__seoAudit,
-        ttfbMs: performance.getEntriesByType("navigation")[0].responseStart,
-        horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
-        missingAlt: [...document.images].filter(image => !image.hasAttribute("alt")).length,
-      }));
+      const metrics = await page.evaluate(() => {
+        const navigation = performance.getEntriesByType("navigation")[0];
+        return {
+          ...window.__seoAudit,
+          ttfbMs: navigation.responseStart,
+          timingBreakdownMs: {
+            dns: navigation.domainLookupEnd - navigation.domainLookupStart,
+            connection: navigation.connectEnd - navigation.connectStart,
+            tls: navigation.secureConnectionStart ? navigation.connectEnd - navigation.secureConnectionStart : 0,
+            requestToFirstByte: navigation.responseStart - navigation.requestStart,
+            download: navigation.responseEnd - navigation.responseStart,
+          },
+          fontTimings: performance.getEntriesByType("resource")
+            .filter(entry => /\/fonts\//.test(entry.name))
+            .map(entry => ({ path: new URL(entry.name).pathname, startMs: entry.startTime, endMs: entry.responseEnd, transferBytes: entry.transferSize })),
+          stylesheetTimings: performance.getEntriesByType("resource")
+            .filter(entry => new URL(entry.name).pathname.endsWith(".css"))
+            .map(entry => ({ path: new URL(entry.name).pathname, startMs: entry.startTime, endMs: entry.responseEnd, transferBytes: entry.transferSize })),
+          horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
+          missingAlt: [...document.images].filter(image => !image.hasAttribute("alt")).length,
+        };
+      });
       report.renderChecks.push({ pathname, viewport: "390x844", method: "Single unthrottled lab observation with 1.5s post-load window; not field Core Web Vitals.", ...metrics, errors });
-    } catch (error) { report.renderChecks.push({ pathname, error: error.message }); }
+      if (errors.length) finding("error", origin + pathname, `Browser reported ${errors.length} JavaScript error(s); see renderChecks.`);
+      if (metrics.horizontalOverflow) finding("warning", origin + pathname, "Page overflows the mobile viewport.");
+      if (metrics.missingAlt) finding("warning", origin + pathname, `${metrics.missingAlt} rendered image(s) lack alt attributes.`);
+    } catch (error) {
+      report.renderChecks.push({ pathname, error: error.message });
+      finding("error", origin + pathname, `Browser check failed: ${error.message}`);
+    }
     await context.close();
   }
   await browser.close();

@@ -8,9 +8,12 @@ pages. Twenty distinct production tests passed, including the exact Netlify
 head transformation that reproduced live React error #418. The font fallback
 now lives in the body, preserving no-JavaScript font loading.
 
-These changes are ready for deployment; they are not recorded as live. The
-historical observations below describe earlier checks and deployment stages.
-The campaign status distinguishes the saved live baseline from the tested source.
+Implementation commit `403ee77` was pushed to GitHub and verified on the live
+Netlify site on October 28. The deployed audit found 16 public URLs with zero
+errors or warnings; homepage and catalog browser checks reported no JavaScript
+errors. Performance still varies and the two-second target is not established.
+The historical observations below describe earlier deployment stages. The
+campaign status distinguishes the old baseline from the verified deployment.
 
 # Current address: https://invitra-ai.netlify.app
 
