@@ -7,8 +7,8 @@ import type { TemplateDef } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 import { Ornament } from "./pattern";
 
-/** Scroll entrance used by every invitation section. Slower and softer than
- *  the marketing site's — an invitation should unfold, not snap. */
+/** Invitation sections stay readable before JavaScript runs; observers only
+ *  add a small movement instead of revealing hidden content. */
 export function InvReveal({
   children,
   className,
@@ -25,8 +25,8 @@ export function InvReveal({
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y, filter: "blur(7px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      initial={{ y: Math.max(-12, Math.min(12, y)) }}
+      whileInView={{ y: 0 }}
       viewport={{ once: true, amount: 0.2, margin: "0px 0px -50px 0px" }}
       transition={{ duration: 1.05, delay, ease: [0.22, 1, 0.36, 1] }}
     >

@@ -1,3 +1,17 @@
+# Latest campaign work: October 28, 2026
+
+Current implementation and evidence are recorded in
+[the campaign status](seo/campaign-status.md). The tested source now contains
+16 public sitemap pages, including a WhatsApp invitation message tool. A public
+HTML audit of the production build found zero errors or warnings across those
+pages. Twenty distinct production tests passed, including the exact Netlify
+head transformation that reproduced live React error #418. The font fallback
+now lives in the body, preserving no-JavaScript font loading.
+
+These changes are ready for deployment; they are not recorded as live. The
+historical observations below describe earlier checks and deployment stages.
+The campaign status distinguishes the saved live baseline from the tested source.
+
 # Current address: https://invitra-ai.netlify.app
 
 The owner renamed the Netlify hostname from invatria.netlify.app. The new live

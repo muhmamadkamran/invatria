@@ -17,7 +17,9 @@ const COLUMNS = [
     title: "Learn",
     links: [
       { href: "/about", label: "About Invitra" },
+      { href: "/about#product-facts", label: "Features and product facts" },
       { href: "/invitations", label: "Invitation wording and ideas" },
+      { href: "/tools/whatsapp-invitation-message", label: "WhatsApp invitation message tool" },
       { href: "/#features", label: "Features" },
       { href: "/#how", label: "How it works" },
       { href: "/#faq", label: "Questions" },

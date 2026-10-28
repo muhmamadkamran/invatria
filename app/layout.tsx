@@ -6,6 +6,7 @@ import { AuthUIProvider } from "@/components/auth/auth-ui";
 import { Toaster } from "sonner";
 import { SITE_URL } from "@/lib/site";
 import { DeferredFonts } from "@/components/deferred-fonts";
+import { socialMetadata } from "@/lib/social-metadata";
 import "./globals.css";
 
 // Self-hosted font families retain their licenses under public/fonts.
@@ -33,20 +34,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Invitra", url: `${SITE_URL}/about` }],
   publisher: "Invitra",
-  openGraph: {
-    type: "website",
-    url: SITE_URL,
-    siteName: "Invitra",
-    title: "Invitra — Create Beautiful Digital Invitations in Minutes",
-    description:
-      "Elegant, animated digital invitations with RSVP, countdown, gallery and music. Unlimited and free, forever.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Invitra — Create Beautiful Digital Invitations in Minutes",
-    description:
-      "Elegant, animated digital invitations with RSVP, countdown, gallery and music. Unlimited and free, forever.",
-  },
+  ...socialMetadata(
+    "Invitra — Free Online Invitation Card Maker",
+    "Create free digital invitations for weddings, birthdays and more. Customize a template, share your invitation link and collect guest RSVPs online.",
+    "/",
+  ),
   robots: { index: true, follow: true },
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
@@ -72,6 +64,9 @@ export default function RootLayout({
         <DeferredFonts href={FONT_HREF} />
       </head>
       <body className="antialiased">
+        {/* Netlify inserts whitespace in head; keep this hydratable fallback
+            in body so that insertion cannot displace its expected DOM node. */}
+        <noscript><link rel="stylesheet" href={FONT_HREF} /></noscript>
         <ThemeProvider>
           <AuthProvider>
           <AuthUIProvider>

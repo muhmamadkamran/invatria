@@ -5,12 +5,16 @@ import { demoInvitation } from "@/lib/defaults";
 import { InvitationView } from "@/components/invitation/view";
 import { PreviewBar } from "@/components/templates/preview-bar";
 import { TEMPLATE_MAP } from "@/lib/templates";
+import { socialMetadata } from "@/lib/social-metadata";
+
+const title = "A finished invitation";
+const description = "See a complete Invitra invitation — envelope reveal, countdown, schedule, gallery, RSVP and guest book, exactly as your guests would.";
 
 export const metadata: Metadata = {
-  title: "A finished invitation",
+  title,
   alternates: { canonical: "/demo" },
-  description:
-    "See a complete Invitra invitation — envelope reveal, countdown, schedule, gallery, RSVP and guest book, exactly as your guests would.",
+  description,
+  ...socialMetadata(title, description, "/demo"),
 };
 
 export default function DemoPage() {

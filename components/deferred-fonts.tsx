@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 
-/** Typography must not prevent the first render of the page's text. */
+/** Typography must not prevent the first render of the page's text. The
+ *  no-JavaScript fallback lives in the body, outside the hosting-modified head. */
 export function DeferredFonts({ href }: { href: string }) {
   useEffect(() => {
     const stylesheet = document.createElement("link");
@@ -12,10 +13,5 @@ export function DeferredFonts({ href }: { href: string }) {
     return () => stylesheet.remove();
   }, [href]);
 
-  return (
-    <>
-      <link rel="preload" as="style" href={href} />
-      <noscript><link rel="stylesheet" href={href} /></noscript>
-    </>
-  );
+  return <link rel="preload" as="style" href={href} />;
 }

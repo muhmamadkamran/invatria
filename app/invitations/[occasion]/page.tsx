@@ -1,3 +1,4 @@
+import { socialMetadata } from "@/lib/social-metadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -25,8 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: guide.title,
     description: guide.description,
     alternates: { canonical: `/invitations/${guide.slug}` },
-    openGraph: { title: guide.title, description: guide.description, url: `/invitations/${guide.slug}` },
-    twitter: { title: guide.title, description: guide.description },
+    ...socialMetadata(guide.title, guide.description, `/invitations/${guide.slug}`),
   };
 }
 
@@ -79,6 +79,7 @@ export default async function OccasionPage({ params }: Props) {
               <h2 id="wording-heading" className="text-title font-light">{category.label} invitation wording</h2>
               <p className="mt-5 select-text whitespace-pre-line leading-relaxed">{guide.wording}</p>
               <CopyWording text={guide.wording} />
+              <p className="mt-3 text-sm"><Link href="/tools/whatsapp-invitation-message" className="underline underline-offset-4">Customize a WhatsApp invitation message</Link> with your event details.</p>
             </section>
           </div>
 

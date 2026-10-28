@@ -10,6 +10,7 @@ export const SITE_IDENTITY_JSON_LD = [
     alternateName: ["Invatria", new URL(SITE_URL).hostname],
     url: `${SITE_URL}/`,
     publisher: { "@id": `${SITE_URL}/#organization` },
+    about: { "@id": `${SITE_URL}/#application` },
   },
   {
     "@context": "https://schema.org",

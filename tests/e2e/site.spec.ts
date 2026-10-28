@@ -44,7 +44,8 @@ for (const template of TEMPLATES) {
   test(`${template.name} preview opens and selects the design`, async ({ page, request }) => {
     await login(page, request);
     await page.goto(`/templates/${template.id}`);
-    await page.getByRole('button', { name: 'Open Invitation', exact: true }).click();
+    await expect(page.getByRole('heading', { name: `${template.name} invitation template`, exact: true })).toBeVisible();
+    await page.locator('#venue').scrollIntoViewIfNeeded();
     await expect(page.locator('#venue')).toBeVisible();
     await page.getByRole('link', { name: 'Use this', exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/create\\?template=${template.id}`));

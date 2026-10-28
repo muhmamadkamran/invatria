@@ -8,22 +8,21 @@ import { cn } from "@/lib/utils";
 type Direction = "up" | "down" | "left" | "right" | "none";
 
 const OFFSET: Record<Direction, { x: number; y: number }> = {
-  up: { x: 0, y: 28 },
-  down: { x: 0, y: -28 },
-  left: { x: 34, y: 0 },
-  right: { x: -34, y: 0 },
+  up: { x: 0, y: 10 },
+  down: { x: 0, y: -10 },
+  left: { x: 12, y: 0 },
+  right: { x: -12, y: 0 },
   none: { x: 0, y: 0 },
 };
 
-/** Scroll-triggered entrance. Fires once, respects reduced-motion, and never
- *  leaves content invisible if the observer misses (amount is generous). */
+/** A small scroll entrance that keeps server-rendered content readable even
+ *  without JavaScript or an intersection-observer callback. */
 export function Reveal({
   children,
   className,
   delay = 0,
   duration = 0.85,
   direction = "up",
-  blur = true,
   as = "div",
 }: {
   children: React.ReactNode;
@@ -31,7 +30,6 @@ export function Reveal({
   delay?: number;
   duration?: number;
   direction?: Direction;
-  blur?: boolean;
   as?: "div" | "section" | "li" | "article" | "span";
 }) {
   const reduce = useReducedMotion();
@@ -43,8 +41,8 @@ export function Reveal({
   return (
     <Cmp
       className={className}
-      initial={{ opacity: 0, ...off, filter: blur ? "blur(6px)" : "blur(0px)" }}
-      whileInView={{ opacity: 1, x: 0, y: 0, filter: "blur(0px)" }}
+      initial={off}
+      whileInView={{ x: 0, y: 0 }}
       viewport={{ once: true, amount: 0.15, margin: "0px 0px -60px 0px" }}
       transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
     >
@@ -60,11 +58,9 @@ export const staggerParent: Variants = {
 };
 
 export const staggerChild: Variants = {
-  hidden: { opacity: 0, y: 24, filter: "blur(5px)" },
+  hidden: { y: 10 },
   show: {
-    opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1] },
   },
 };
@@ -93,7 +89,7 @@ export function Stagger({
   );
 }
 
-/** Word-by-word headline reveal — the signature entrance for section titles. */
+/** Keep every headline word visible before hydration and viewport detection. */
 export function RevealWords({
   text,
   className,
@@ -123,7 +119,7 @@ export function RevealWords({
           <motion.span
             className={cn("inline-block", wordClassName)}
             variants={{
-              hidden: { y: "110%", opacity: 0 },
+              hidden: { y: "0%", opacity: 1 },
               show: {
                 y: "0%",
                 opacity: 1,

@@ -2,6 +2,13 @@
 
 Audience: worldwide English searches, as requested by the owner.
 
+Latest implementation and measurement state:
+[campaign status](seo/campaign-status.md), [promotion drafts](seo/promotion-kit.md)
+and [opportunity spreadsheet](seo/promotion-opportunities.csv). The tested source
+adds `/tools/whatsapp-invitation-message`, bringing the sitemap to 16 public URLs.
+The last saved live audit still contains 15; deployment and live verification
+are required before reporting the new tool as published.
+
 Current production URL: `https://invitra-ai.netlify.app`. The Netlify hostname
 was renamed; migrate canonical URLs, sitemap submission, Search Console property
 and old-site redirects using [migration/README.md](migration/README.md). Earlier
@@ -45,6 +52,7 @@ query export was available for volume validation.
 | free digital baby shower invitations | baby shower invitation wording, baby shower invitations with RSVP | `/invitations/baby-shower` |
 | free online nikah invitation maker | nikah invitation wording in English, digital nikah invitation | `/invitations/nikah` |
 | invitation templates and wording by occasion | invitation checklist, invitation wording examples | `/invitations` |
+| WhatsApp invitation message generator | wedding invitation message for WhatsApp, birthday invitation message, nikah invitation wording for WhatsApp | `/tools/whatsapp-invitation-message` |
 
 Research found dedicated wedding, birthday, baby shower and nikah pages in the
 current results. This supports an occasion-specific intent hypothesis, not a

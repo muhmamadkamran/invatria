@@ -46,11 +46,14 @@ export function InvitationView({
   /** Preview mode skips the envelope and disables the fixed music button. */
   preview = false,
   publicUrl,
+  headingLevel = "h1",
 }: {
   invitation: Invitation;
   preview?: boolean;
   publicUrl?: string;
+  headingLevel?: "h1" | "h2";
 }) {
+  const NameHeading = headingLevel;
   const template = getTemplate(invitation.templateId);
   const copy = t(invitation.language);
   const occasion = getOccasion(invitation.category);
@@ -201,9 +204,9 @@ export function InvitationView({
             </InvReveal>
 
             <InvReveal delay={0.2}>
-              <h1 className="mt-8">
+              <NameHeading className="mt-8">
                 <InvitationNames invitation={invitation} variant="hero" />
-              </h1>
+              </NameHeading>
             </InvReveal>
 
             <InvReveal delay={0.3}>

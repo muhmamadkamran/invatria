@@ -56,14 +56,14 @@ export function Hero() {
   const tiltX = useTransform(sy, [-0.5, 0.5], [7, -7]);
   const tiltY = useTransform(sx, [-0.5, 0.5], [-10, 10]);
 
-  /** Entrance props for the hero's staged copy. Reduced-motion visitors get
-   *  the finished state immediately rather than a slow, delayed fade. */
+  /** Copy and actions are readable in the initial HTML. Motion only adds a
+   *  small entrance, with no opacity gate or dependency on hydration. */
   const entrance = (delay: number, y = 18) =>
     reduce
       ? {}
       : {
-          initial: { opacity: 0, y },
-          animate: { opacity: 1, y: 0 },
+          initial: { y: Math.min(y, 10) },
+          animate: { y: 0 },
           transition: { duration: 0.95, delay, ease: [0.22, 1, 0.36, 1] as const },
         };
 
@@ -194,11 +194,7 @@ export function Hero() {
             {SHELF.map((item, i) => (
               <motion.div
                 key={item.template.id}
-                initial={
-                  reduce
-                    ? false
-                    : { opacity: 0, y: 90, rotate: item.rotate * 2.2, scale: 0.8 }
-                }
+                initial={false}
                 animate={{ opacity: 1, y: item.y, rotate: item.rotate, scale: item.scale }}
                 transition={
                   reduce

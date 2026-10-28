@@ -1,3 +1,4 @@
+import { socialMetadata } from "@/lib/social-metadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   title: "Invitation Templates and Wording by Occasion",
   description: "Find wedding, birthday, baby shower and nikah invitation ideas. Browse free templates, copy sample wording and plan the details your guests need.",
   alternates: { canonical: "/invitations" },
+  ...socialMetadata("Invitation Templates and Wording by Occasion", "Find wedding, birthday, baby shower and nikah invitation ideas, sample wording and free designs.", "/invitations"),
 };
 
 export default function InvitationsPage() {
@@ -32,7 +34,8 @@ export default function InvitationsPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-12">Planning another event? <Link href="/templates" className="underline underline-offset-4">Browse every template and occasion</Link>.</p>
+          <p className="mt-12">Sending your invite in a chat? <Link href="/tools/whatsapp-invitation-message" className="underline underline-offset-4">Prepare a WhatsApp invitation message</Link> with your event details and RSVP link.</p>
+          <p className="mt-6">Planning another event? <Link href="/templates" className="underline underline-offset-4">Browse every template and occasion</Link>.</p>
         </div>
       </main>
       <SiteFooter />

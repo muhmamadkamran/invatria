@@ -4,12 +4,16 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AdSlot } from "@/components/ads";
 import { TemplateBrowser } from "@/components/templates/browser";
+import { socialMetadata } from "@/lib/social-metadata";
+
+const title = "Free Invitation Card Templates";
+const description = "Browse six free invitation card templates for weddings, birthdays and other events. Preview a design, customize your details and share it online.";
 
 export const metadata: Metadata = {
-  title: "Free Invitation Card Templates",
+  title,
   alternates: { canonical: "/templates" },
-  description:
-    "Browse six free invitation card templates for weddings, birthdays and other events. Preview a design, customize your details and share it online.",
+  description,
+  ...socialMetadata(title, description, "/templates"),
 };
 
 export default function TemplatesPage() {

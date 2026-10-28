@@ -16,7 +16,7 @@
 /test-results/
 /test-videos/
 /playwright/.cache/
-/.tmp/trace-inspect/
+/.tmp/
 
 # next.js
 /.next/
